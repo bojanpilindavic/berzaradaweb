@@ -1,5 +1,5 @@
 import React from "react";
-import { ScrollView, StatusBar } from "react-native";
+import { ScrollView, StatusBar, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import Header from "../components/Header";
@@ -11,10 +11,11 @@ import NajtrazenijiOglasi from "../components/NajtrazenijiOglasi";
 
 const HomeScreen = () => {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }} edges={["top"]}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar barStyle="dark-content" />
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
       >
         <Header />
@@ -29,3 +30,16 @@ const HomeScreen = () => {
 };
 
 export default HomeScreen;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 24,
+  },
+});
