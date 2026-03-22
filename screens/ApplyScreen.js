@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import {
+  View,
   Text,
   TextInput,
   TouchableOpacity,
@@ -97,83 +98,91 @@ const ApplyScreen = ({ route }) => {
     }
   };
 
+  const content = (
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>Prijava na oglas</Text>
+
+      <Text style={styles.label}>
+        Ime i prezime <Text style={styles.required}>*</Text>
+      </Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Unesite ime i prezime"
+        value={name}
+        onChangeText={setName}
+        returnKeyType="next"
+        placeholderTextColor="#777"
+      />
+
+      <Text style={styles.label}>
+        Email <Text style={styles.required}>*</Text>
+      </Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Unesite email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="next"
+        placeholderTextColor="#777"
+      />
+
+      <Text style={styles.label}>Poruka (opciono)</Text>
+      <TextInput
+        style={[styles.input, styles.messageInput]}
+        placeholder="Ostavite poruku"
+        value={message}
+        onChangeText={setMessage}
+        multiline
+        textAlignVertical="top"
+        placeholderTextColor="#777"
+      />
+
+      <Text style={styles.label}>
+        Dodajte CV <Text style={styles.required}>*</Text>
+      </Text>
+      <TouchableOpacity
+        style={styles.uploadButton}
+        onPress={handleFileUpload}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.uploadText}>
+          {cv ? `📄 ${cv.name ?? "CV"}` : "Dodaj CV"}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={[styles.submitButton, loading && styles.submitButtonDisabled]}
+        onPress={handleSubmit}
+        disabled={loading}
+        activeOpacity={0.85}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.submitText}>📨 Pošalji prijavu</Text>
+        )}
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  if (Platform.OS === "web") {
+    return <View style={styles.webWrapper}>{content}</View>;
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.title}>Prijava na oglas</Text>
-
-          <Text style={styles.label}>
-            Ime i prezime <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Unesite ime i prezime"
-            value={name}
-            onChangeText={setName}
-            returnKeyType="next"
-          />
-
-          <Text style={styles.label}>
-            Email <Text style={styles.required}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Unesite email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-          />
-
-          <Text style={styles.label}>Poruka (opciono)</Text>
-          <TextInput
-            style={[styles.input, styles.messageInput]}
-            placeholder="Ostavite poruku"
-            value={message}
-            onChangeText={setMessage}
-            multiline
-            textAlignVertical="top"
-          />
-
-          <Text style={styles.label}>
-            Dodajte CV <Text style={styles.required}>*</Text>
-          </Text>
-          <TouchableOpacity
-            style={styles.uploadButton}
-            onPress={handleFileUpload}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.uploadText}>
-              {cv ? `📄 ${cv.name ?? "CV"}` : "Dodaj CV"}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.submitButton,
-              loading && styles.submitButtonDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={loading}
-            activeOpacity={0.85}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.submitText}>📨 Pošalji prijavu</Text>
-            )}
-          </TouchableOpacity>
-        </ScrollView>
+        {content}
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
@@ -181,6 +190,9 @@ const ApplyScreen = ({ route }) => {
 
 const styles = StyleSheet.create({
   keyboardContainer: {
+    flex: 1,
+  },
+  webWrapper: {
     flex: 1,
   },
   container: {
@@ -212,6 +224,7 @@ const styles = StyleSheet.create({
     padding: 10,
     marginTop: 6,
     fontSize: 16,
+    outlineStyle: "none",
   },
   messageInput: {
     height: 80,
