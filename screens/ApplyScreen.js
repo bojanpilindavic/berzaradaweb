@@ -25,6 +25,14 @@ const ApplyScreen = ({ route }) => {
   const [cv, setCV] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const handleFileUpload = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
@@ -35,14 +43,15 @@ const ApplyScreen = ({ route }) => {
       if (!result || result.canceled) return;
 
       const file = result.assets ? result.assets[0] : result;
+
       if (!file?.uri) {
-        Alert.alert("Greška", "Neuspelo učitavanje CV-a.");
+        showMessage("Greška", "Neuspjelo učitavanje CV-a.");
         return;
       }
 
       setCV(file);
     } catch (error) {
-      Alert.alert("Greška", "Pokušajte ponovo.");
+      showMessage("Greška", "Pokušajte ponovo.");
     }
   };
 
@@ -51,14 +60,13 @@ const ApplyScreen = ({ route }) => {
     const trimmedEmail = email.trim();
 
     if (!trimmedName || !trimmedEmail || !cv?.uri) {
-      Alert.alert("Greška", "Ime, email i CV su obavezni!");
+      showMessage("Greška", "Ime, email i CV su obavezni!");
       return;
     }
 
-    // (opciono, ali korisno)
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(trimmedEmail)) {
-      Alert.alert("Greška", "Unesite ispravan email.");
+      showMessage("Greška", "Unesite ispravan email.");
       return;
     }
 
@@ -67,23 +75,23 @@ const ApplyScreen = ({ route }) => {
       await addDoc(collection(db, "applications"), {
         name: trimmedName,
         email: trimmedEmail,
-        message,
+        message: message.trim(),
         cvName: cv.name ?? "CV",
-        cvUri: cv.uri, // napomena: lokalni uri (nije sharable drugim korisnicima)
+        cvUri: cv.uri,
         jobId,
         appliedAt: new Date(),
         uid,
         employerId,
       });
 
-      Alert.alert("Uspešno", "Vaša prijava je uspešno poslata!");
+      showMessage("Uspješno", "Vaša prijava je uspješno poslata!");
       setName("");
       setEmail("");
       setMessage("");
       setCV(null);
     } catch (error) {
-      console.error("❌ Greška pri slanju prijave:", error);
-      Alert.alert("Greška", "Došlo je do greške pri slanju prijave.");
+      console.error("Greška pri slanju prijave:", error);
+      showMessage("Greška", "Došlo je do greške pri slanju prijave.");
     } finally {
       setLoading(false);
     }
@@ -91,11 +99,15 @@ const ApplyScreen = ({ route }) => {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={styles.keyboardContainer}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView contentContainerStyle={styles.container}>
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           <Text style={styles.title}>Prijava na oglas</Text>
 
           <Text style={styles.label}>
@@ -106,6 +118,7 @@ const ApplyScreen = ({ route }) => {
             placeholder="Unesite ime i prezime"
             value={name}
             onChangeText={setName}
+            returnKeyType="next"
           />
 
           <Text style={styles.label}>
@@ -119,6 +132,7 @@ const ApplyScreen = ({ route }) => {
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
+            returnKeyType="next"
           />
 
           <Text style={styles.label}>Poruka (opciono)</Text>
@@ -128,6 +142,7 @@ const ApplyScreen = ({ route }) => {
             value={message}
             onChangeText={setMessage}
             multiline
+            textAlignVertical="top"
           />
 
           <Text style={styles.label}>
@@ -136,6 +151,7 @@ const ApplyScreen = ({ route }) => {
           <TouchableOpacity
             style={styles.uploadButton}
             onPress={handleFileUpload}
+            activeOpacity={0.8}
           >
             <Text style={styles.uploadText}>
               {cv ? `📄 ${cv.name ?? "CV"}` : "Dodaj CV"}
@@ -145,10 +161,11 @@ const ApplyScreen = ({ route }) => {
           <TouchableOpacity
             style={[
               styles.submitButton,
-              loading && { backgroundColor: "#ccc" },
+              loading && styles.submitButtonDisabled,
             ]}
             onPress={handleSubmit}
             disabled={loading}
+            activeOpacity={0.85}
           >
             {loading ? (
               <ActivityIndicator color="#fff" />
@@ -163,7 +180,14 @@ const ApplyScreen = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#e6f0fa", flexGrow: 1 },
+  keyboardContainer: {
+    flex: 1,
+  },
+  container: {
+    padding: 20,
+    backgroundColor: "#e6f0fa",
+    flexGrow: 1,
+  },
   title: {
     fontSize: 22,
     fontWeight: "bold",
@@ -171,8 +195,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 20,
   },
-  label: { fontWeight: "bold", fontSize: 16, color: "#274E6D", marginTop: 10 },
-  required: { color: "red" },
+  label: {
+    fontWeight: "bold",
+    fontSize: 16,
+    color: "#274E6D",
+    marginTop: 10,
+  },
+  required: {
+    color: "red",
+  },
   input: {
     backgroundColor: "#fff",
     borderWidth: 1,
@@ -182,7 +213,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     fontSize: 16,
   },
-  messageInput: { height: 80, textAlignVertical: "top" },
+  messageInput: {
+    height: 80,
+  },
   uploadButton: {
     backgroundColor: "#f0f0f0",
     padding: 12,
@@ -190,7 +223,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-  uploadText: { fontSize: 16, color: "#5B8DB8", fontWeight: "bold" },
+  uploadText: {
+    fontSize: 16,
+    color: "#5B8DB8",
+    fontWeight: "bold",
+  },
   submitButton: {
     backgroundColor: "#5B8DB8",
     padding: 15,
@@ -199,7 +236,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 40,
   },
-  submitText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  submitButtonDisabled: {
+    backgroundColor: "#ccc",
+  },
+  submitText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default ApplyScreen;

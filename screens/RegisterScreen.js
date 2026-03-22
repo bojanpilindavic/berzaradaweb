@@ -49,21 +49,32 @@ const RegisterScreen = () => {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [municipality, setMunicipality] = useState("");
 
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   const validatePassword = (value) => {
     const hasUpperCase = /[A-Z]/.test(value);
     const hasNumber = /[0-9]/.test(value);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(value);
+
     if (!hasUpperCase || !hasNumber || !hasSpecialChar) {
       return "Šifra mora imati bar jedno veliko slovo, broj i specijalan znak.";
     }
+
     return "";
   };
 
   const validateFields = () => {
     let isValid = true;
+    const trimmedEmail = email.trim();
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       setEmailError("Unesite ispravan email.");
       isValid = false;
     } else {
@@ -85,21 +96,28 @@ const RegisterScreen = () => {
       setConfirmPasswordError("");
     }
 
-    if (userType === "worker" && (!fullName || !email || !password)) {
-      Alert.alert("Greška", "Sva obavezna polja moraju biti popunjena!");
+    if (
+      userType === "worker" &&
+      (!fullName.trim() || !trimmedEmail || !password)
+    ) {
+      showMessage("Greška", "Sva obavezna polja moraju biti popunjena!");
       isValid = false;
     }
 
     if (
       userType === "employer" &&
-      (!companyName || !jib || !municipality || !email || !password)
+      (!companyName.trim() ||
+        !jib.trim() ||
+        !municipality.trim() ||
+        !trimmedEmail ||
+        !password)
     ) {
-      Alert.alert("Greška", "Sva obavezna polja moraju biti popunjena!");
+      showMessage("Greška", "Sva obavezna polja moraju biti popunjena!");
       isValid = false;
     }
 
     if (!agreed) {
-      Alert.alert("Greška", "Morate prihvatiti uslove korišćenja.");
+      showMessage("Greška", "Morate prihvatiti uslove korišćenja.");
       isValid = false;
     }
 
@@ -113,11 +131,14 @@ const RegisterScreen = () => {
     const auth = getAuth();
 
     try {
+      const trimmedEmail = email.trim().toLowerCase();
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        email,
+        trimmedEmail,
         password
       );
+
       const user = userCredential.user;
       await sendEmailVerification(user);
 
@@ -125,18 +146,24 @@ const RegisterScreen = () => {
         user.uid,
         userType,
         {
-          email,
+          email: trimmedEmail,
           ...(userType === "worker"
-            ? { fullName, municipality }
-            : { companyName, jib, activity, municipality }),
+            ? { fullName: fullName.trim(), municipality: municipality.trim() }
+            : {
+                companyName: companyName.trim(),
+                jib: jib.trim(),
+                activity: activity.trim(),
+                municipality: municipality.trim(),
+              }),
         },
         image
       );
 
-      Alert.alert(
+      showMessage(
         "Proverite email",
         "Na vaš email je poslat link za potvrdu registracije."
       );
+
       setEmail("");
       setPassword("");
       setConfirmPassword("");
@@ -147,11 +174,14 @@ const RegisterScreen = () => {
       setImage(null);
       setMunicipality("");
       setAgreed(false);
+      setEmailError("");
+      setPasswordError("");
+      setConfirmPasswordError("");
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
         setEmailError("Email adresa je već registrovana.");
       } else {
-        Alert.alert("Greška", error.message);
+        showMessage("Greška", error.message || "Došlo je do greške.");
       }
     } finally {
       setLoading(false);
@@ -159,21 +189,30 @@ const RegisterScreen = () => {
   };
 
   const pickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== "granted") {
-      Alert.alert("Dozvola potrebna", "Morate omogućiti pristup galeriji.");
-      return;
-    }
+    try {
+      if (Platform.OS !== "web") {
+        const { status } =
+          await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+        if (status !== "granted") {
+          showMessage("Dozvola potrebna", "Morate omogućiti pristup galeriji.");
+          return;
+        }
+      }
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+
+      if (!result.canceled && result.assets?.[0]?.uri) {
+        setImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.error("Greška pri odabiru slike:", error);
+      showMessage("Greška", "Nije moguće izabrati sliku.");
     }
   };
 
@@ -184,7 +223,8 @@ const RegisterScreen = () => {
     placeholder,
     secure = false,
     toggle = null,
-    show = true
+    show = true,
+    extraProps = {}
   ) => (
     <View style={styles.inputContainer}>
       <Ionicons name={iconName} size={20} color="#555" style={styles.icon} />
@@ -194,9 +234,10 @@ const RegisterScreen = () => {
         onChangeText={setValue}
         style={styles.inputField}
         secureTextEntry={secure && !show}
+        {...extraProps}
       />
       {toggle && (
-        <TouchableOpacity onPress={toggle}>
+        <TouchableOpacity onPress={toggle} activeOpacity={0.8}>
           <Ionicons
             name={show ? "eye-off-outline" : "eye-outline"}
             size={20}
@@ -210,27 +251,38 @@ const RegisterScreen = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      style={styles.keyboardContainer}
     >
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.container}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.title}>Registracija</Text>
 
         <View style={styles.tabContainer}>
           <TouchableOpacity
             style={[styles.tab, userType === "worker" && styles.activeTab]}
             onPress={() => setUserType("worker")}
+            activeOpacity={0.85}
           >
             <Text style={styles.tabText}>Radnik</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.tab, userType === "employer" && styles.activeTab]}
             onPress={() => setUserType("employer")}
+            activeOpacity={0.85}
           >
             <Text style={styles.tabText}>Poslodavac</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
+        <TouchableOpacity
+          style={styles.imageContainer}
+          onPress={pickImage}
+          activeOpacity={0.85}
+        >
           {image ? (
             <Image source={{ uri: image }} style={styles.image} />
           ) : (
@@ -244,22 +296,61 @@ const RegisterScreen = () => {
         </TouchableOpacity>
 
         {userType === "worker" ? (
-          renderInput("person-outline", fullName, setFullName, "Ime i prezime")
+          <>
+            {renderInput(
+              "person-outline",
+              fullName,
+              setFullName,
+              "Ime i prezime",
+              false,
+              null,
+              true,
+              { returnKeyType: "next" }
+            )}
+
+            <DropdownMunicipality
+              selected={municipality}
+              onSelect={setMunicipality}
+            />
+          </>
         ) : (
           <>
             {renderInput(
               "business-outline",
               companyName,
               setCompanyName,
-              "Naziv firme"
+              "Naziv firme",
+              false,
+              null,
+              true,
+              { returnKeyType: "next" }
             )}
-            {renderInput("document-outline", jib, setJib, "JIB")}
+
+            {renderInput(
+              "document-outline",
+              jib,
+              setJib,
+              "JIB",
+              false,
+              null,
+              true,
+              {
+                keyboardType: "numeric",
+                returnKeyType: "next",
+              }
+            )}
+
             {renderInput(
               "briefcase-outline",
               activity,
               setActivity,
-              "Delatnost"
+              "Delatnost",
+              false,
+              null,
+              true,
+              { returnKeyType: "next" }
             )}
+
             <DropdownMunicipality
               selected={municipality}
               onSelect={setMunicipality}
@@ -267,7 +358,21 @@ const RegisterScreen = () => {
           </>
         )}
 
-        {renderInput("mail-outline", email, setEmail, "Email")}
+        {renderInput(
+          "mail-outline",
+          email,
+          setEmail,
+          "Email",
+          false,
+          null,
+          true,
+          {
+            keyboardType: "email-address",
+            autoCapitalize: "none",
+            autoCorrect: false,
+            returnKeyType: "next",
+          }
+        )}
         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
         {renderInput(
@@ -277,7 +382,12 @@ const RegisterScreen = () => {
           "Šifra",
           true,
           () => setShowPassword(!showPassword),
-          showPassword
+          showPassword,
+          {
+            autoCapitalize: "none",
+            autoCorrect: false,
+            returnKeyType: "next",
+          }
         )}
         {passwordError ? (
           <Text style={styles.errorText}>{passwordError}</Text>
@@ -290,7 +400,13 @@ const RegisterScreen = () => {
           "Ponovi šifru",
           true,
           () => setShowConfirm(!showConfirm),
-          showConfirm
+          showConfirm,
+          {
+            autoCapitalize: "none",
+            autoCorrect: false,
+            returnKeyType: "done",
+            onSubmitEditing: handleRegister,
+          }
         )}
         {confirmPasswordError ? (
           <Text style={styles.errorText}>{confirmPasswordError}</Text>
@@ -299,6 +415,7 @@ const RegisterScreen = () => {
         <TouchableOpacity
           style={styles.checkboxContainer}
           onPress={() => setAgreed(!agreed)}
+          activeOpacity={0.85}
         >
           <MaterialIcons
             name={agreed ? "check-box" : "check-box-outline-blank"}
@@ -324,6 +441,7 @@ const RegisterScreen = () => {
           ]}
           onPress={handleRegister}
           disabled={!agreed || loading}
+          activeOpacity={0.85}
         >
           {loading ? (
             <ActivityIndicator color="white" />
@@ -338,7 +456,7 @@ const RegisterScreen = () => {
         animationType="slide"
         onRequestClose={() => setShowPrivacyModal(false)}
       >
-        <View style={{ flex: 1, padding: 20 }}>
+        <View style={styles.modalContent}>
           <PrivacyPolicy />
           <Button title="Zatvori" onPress={() => setShowPrivacyModal(false)} />
         </View>
@@ -349,7 +467,7 @@ const RegisterScreen = () => {
         animationType="slide"
         onRequestClose={() => setShowTermsModal(false)}
       >
-        <View style={{ flex: 1, padding: 20 }}>
+        <View style={styles.modalContent}>
           <TermsOfService />
           <Button title="Zatvori" onPress={() => setShowTermsModal(false)} />
         </View>
@@ -359,7 +477,18 @@ const RegisterScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, padding: 20, backgroundColor: "#e6f0fa" },
+  keyboardContainer: {
+    flex: 1,
+  },
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: "#e6f0fa",
+  },
+  modalContent: {
+    flex: 1,
+    padding: 20,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -367,12 +496,33 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#274E6D",
   },
-  tabContainer: { flexDirection: "row", marginBottom: 20 },
-  tab: { flex: 1, padding: 10, alignItems: "center", backgroundColor: "#ccc" },
-  activeTab: { backgroundColor: "#5B8DB8" },
-  tabText: { fontSize: 16, fontWeight: "bold", color: "#fff" },
-  imageContainer: { alignSelf: "center", marginBottom: 20 },
-  image: { width: 100, height: 100, borderRadius: 50 },
+  tabContainer: {
+    flexDirection: "row",
+    marginBottom: 20,
+  },
+  tab: {
+    flex: 1,
+    padding: 10,
+    alignItems: "center",
+    backgroundColor: "#ccc",
+  },
+  activeTab: {
+    backgroundColor: "#5B8DB8",
+  },
+  tabText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
+  imageContainer: {
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+  },
   imagePlaceholder: {
     width: 100,
     height: 100,
@@ -382,7 +532,11 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderRadius: 50,
   },
-  imageButtonText: { fontSize: 12, color: "gray", textAlign: "center" },
+  imageButtonText: {
+    fontSize: 12,
+    color: "gray",
+    textAlign: "center",
+  },
   inputContainer: {
     width: "100%",
     flexDirection: "row",
@@ -394,25 +548,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 10,
   },
-  icon: { marginRight: 5 },
-  inputField: { flex: 1, paddingVertical: 10 },
+  icon: {
+    marginRight: 5,
+  },
+  inputField: {
+    flex: 1,
+    paddingVertical: 10,
+  },
   checkboxContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 10,
   },
-  checkboxText: { marginLeft: 10, fontSize: 14 },
-  link: { color: "#007bff", textDecorationLine: "underline" },
+  checkboxText: {
+    marginLeft: 10,
+    fontSize: 14,
+    flex: 1,
+  },
+  link: {
+    color: "#007bff",
+    textDecorationLine: "underline",
+  },
   registerButton: {
     backgroundColor: "#5B8DB8",
     padding: 12,
     borderRadius: 5,
     alignItems: "center",
     marginTop: 15,
+    marginBottom: 20,
   },
-  registerButtonText: { color: "white", fontSize: 16, fontWeight: "bold" },
-  disabledButton: { backgroundColor: "gray" },
-  errorText: { color: "red", fontSize: 12, marginBottom: 5 },
+  registerButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: "gray",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 5,
+  },
 });
 
 export default RegisterScreen;

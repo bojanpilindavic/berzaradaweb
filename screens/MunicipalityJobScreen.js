@@ -32,6 +32,7 @@ const MunicipalityJobScreen = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
+
       try {
         if (!municipality) {
           setJobs([]);
@@ -93,16 +94,11 @@ const MunicipalityJobScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>
-        Opština:{" "}
-        <Text style={{ fontWeight: "bold" }}>{municipality || "-"}</Text>
+        Opština: <Text style={styles.headerBold}>{municipality || "-"}</Text>
       </Text>
 
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#5B8DB8"
-          style={{ marginTop: 20 }}
-        />
+        <ActivityIndicator size="large" color="#5B8DB8" style={styles.loader} />
       ) : jobs.length === 0 ? (
         <Text style={styles.noJobsText}>Nema oglasa za ovu opštinu.</Text>
       ) : (
@@ -110,7 +106,8 @@ const MunicipalityJobScreen = () => {
           data={jobs}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -131,11 +128,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#274E6D",
   },
+  headerBold: {
+    fontWeight: "bold",
+  },
+  loader: {
+    marginTop: 20,
+  },
   noJobsText: {
     marginTop: 20,
     textAlign: "center",
     fontSize: 16,
     color: "#555",
+  },
+  listContent: {
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: "#FFFFE3",

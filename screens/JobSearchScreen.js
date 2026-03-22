@@ -29,13 +29,13 @@ const JobScreen = () => {
   useEffect(() => {
     const fetchJobs = async () => {
       setLoading(true);
+
       try {
         const jobsRef = collection(db, "jobs");
         const snapshot = await getDocs(jobsRef);
 
         const allJobs = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
 
-        // Ako nema query-ja, prikaži sve (ili promijeni po želji)
         if (!normalizedQuery) {
           setJobs(allJobs);
           return;
@@ -64,6 +64,39 @@ const JobScreen = () => {
     fetchJobs();
   }, [normalizedQuery]);
 
+  const renderItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => navigation.navigate("JobDetailsScreen", { job: item })}
+      activeOpacity={0.8}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.firma}>
+          {item.companyName || "Nepoznata firma"}
+        </Text>
+        {item.logo ? (
+          <Image source={{ uri: item.logo }} style={styles.logo} />
+        ) : null}
+      </View>
+
+      <Text style={styles.position}>
+        {item.position || "Nepoznata pozicija"}
+      </Text>
+
+      <Text style={styles.location}>
+        📍 {item.municipality || "Nepoznata lokacija"}
+      </Text>
+
+      <Text style={styles.deadline}>
+        ⏳ Konkurs otvoren do: {item.endDate || "-"}
+      </Text>
+
+      <Text style={styles.numberPosition}>
+        👥 Broj slobodnih pozicija: {item.numberOfPositions ?? "Nepoznato"}
+      </Text>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Rezultati pretrage: "{searchQuery}"</Text>
@@ -71,7 +104,7 @@ const JobScreen = () => {
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#5B8DB8" />
-          <Text style={{ color: "#274E6D", marginTop: 10 }}>Učitavanje...</Text>
+          <Text style={styles.loadingText}>Učitavanje...</Text>
         </View>
       ) : jobs.length === 0 ? (
         <Text style={styles.noResults}>Nema rezultata.</Text>
@@ -79,42 +112,9 @@ const JobScreen = () => {
         <FlatList
           data={jobs}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 50 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() =>
-                navigation.navigate("JobDetailsScreen", { job: item })
-              }
-              activeOpacity={0.8}
-            >
-              <View style={styles.cardHeader}>
-                <Text style={styles.firma}>
-                  {item.companyName || "Nepoznata firma"}
-                </Text>
-                {item.logo ? (
-                  <Image source={{ uri: item.logo }} style={styles.logo} />
-                ) : null}
-              </View>
-
-              <Text style={styles.position}>
-                {item.position || "Nepoznata pozicija"}
-              </Text>
-
-              <Text style={styles.location}>
-                📍 {item.municipality || "Nepoznata lokacija"}
-              </Text>
-
-              <Text style={styles.deadline}>
-                ⏳ Konkurs otvoren do: {item.endDate || "-"}
-              </Text>
-
-              <Text style={styles.numberPosition}>
-                👥 Broj slobodnih pozicija:{" "}
-                {item.numberOfPositions ?? "Nepoznato"}
-              </Text>
-            </TouchableOpacity>
-          )}
+          contentContainerStyle={styles.listContent}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -144,6 +144,13 @@ const styles = StyleSheet.create({
   loadingContainer: {
     marginTop: 40,
     alignItems: "center",
+  },
+  loadingText: {
+    color: "#274E6D",
+    marginTop: 10,
+  },
+  listContent: {
+    paddingBottom: 50,
   },
   card: {
     backgroundColor: "#FFFFE3",

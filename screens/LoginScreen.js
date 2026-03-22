@@ -9,6 +9,11 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import {
   getAuth,
@@ -30,6 +35,14 @@ const LoginScreen = () => {
   const auth = getAuth();
 
   const normalizeEmail = (value) => value.trim().toLowerCase();
+
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   const handleLogin = async () => {
     const cleanEmail = normalizeEmail(email);
@@ -55,7 +68,6 @@ const LoginScreen = () => {
         return;
       }
 
-      // ───── PROVERA ADMINA ─────
       const adminFlag = isAdmin(user.email);
       setLoading(false);
 
@@ -63,7 +75,6 @@ const LoginScreen = () => {
         navigation.reset({ index: 0, routes: [{ name: "AdminHome" }] });
         return;
       }
-      // ───────────────────────────
 
       console.log("User logged in:", user.email);
       navigation.reset({ index: 0, routes: [{ name: "HomeScreen" }] });
@@ -78,7 +89,8 @@ const LoginScreen = () => {
           message = "Korisnik sa ovom email adresom ne postoji.";
           break;
         case "auth/wrong-password":
-          message = "Pogrešna šifra. Pokušajte ponovo.";
+        case "auth/invalid-credential":
+          message = "Pogrešna šifra ili email. Pokušajte ponovo.";
           break;
         case "auth/too-many-requests":
           message = "Previše neuspelih pokušaja. Pokušajte kasnije.";
@@ -96,7 +108,7 @@ const LoginScreen = () => {
     const cleanEmail = normalizeEmail(email);
 
     if (!cleanEmail) {
-      Alert.alert(
+      showMessage(
         "Greška",
         "Molimo unesite email adresu pre nego što resetujete šifru."
       );
@@ -105,7 +117,7 @@ const LoginScreen = () => {
 
     try {
       await sendPasswordResetEmail(auth, cleanEmail);
-      Alert.alert(
+      showMessage(
         "Uspešno",
         "Link za resetovanje šifre je poslat na vaš email."
       );
@@ -114,94 +126,124 @@ const LoginScreen = () => {
       if (error.code === "auth/user-not-found") {
         message = "Nije pronađen korisnik sa ovom email adresom.";
       }
-      Alert.alert("Greška", message);
+      showMessage("Greška", message);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/headerlogo.png")}
-        style={styles.headerLogo}
-      />
+    <KeyboardAvoidingView
+      style={styles.keyboardContainer}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.container}>
+            <Image
+              source={require("../assets/headerlogo.png")}
+              style={styles.headerLogo}
+            />
 
-      <Text style={styles.title}>Prijava</Text>
+            <Text style={styles.title}>Prijava</Text>
 
-      {errorMessage ? (
-        <Text style={styles.errorText}>{errorMessage}</Text>
-      ) : null}
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
 
-      {/* EMAIL INPUT */}
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name="mail-outline"
-          size={20}
-          color="#555"
-          style={styles.icon}
-        />
-        <TextInput
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.inputField}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </View>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="mail-outline"
+                size={20}
+                color="#555"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                style={styles.inputField}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
+              />
+            </View>
 
-      {/* PASSWORD INPUT */}
-      <View style={styles.inputContainer}>
-        <Ionicons
-          name="lock-closed-outline"
-          size={20}
-          color="#555"
-          style={styles.icon}
-        />
-        <TextInput
-          placeholder="Šifra"
-          value={password}
-          onChangeText={setPassword}
-          style={styles.inputField}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TouchableOpacity onPress={() => setShowPassword((p) => !p)}>
-          <Ionicons
-            name={showPassword ? "eye-off-outline" : "eye-outline"}
-            size={20}
-            color="#555"
-            style={styles.eyeIcon}
-          />
-        </TouchableOpacity>
-      </View>
+            <View style={styles.inputContainer}>
+              <Ionicons
+                name="lock-closed-outline"
+                size={20}
+                color="#555"
+                style={styles.icon}
+              />
+              <TextInput
+                placeholder="Šifra"
+                value={password}
+                onChangeText={setPassword}
+                style={styles.inputField}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword((p) => !p)}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name={showPassword ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#555"
+                  style={styles.eyeIcon}
+                />
+              </TouchableOpacity>
+            </View>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleLogin}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Prijavi se</Text>
-        )}
-      </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.85}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Prijavi se</Text>
+              )}
+            </TouchableOpacity>
 
-      <TouchableOpacity onPress={handleForgotPassword}>
-        <Text style={styles.forgotPassword}>Zaboravljena šifra?</Text>
-      </TouchableOpacity>
+            <TouchableOpacity
+              onPress={handleForgotPassword}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.forgotPassword}>Zaboravljena šifra?</Text>
+            </TouchableOpacity>
 
-      <Text style={styles.registerText}>Nemate nalog?</Text>
-      <TouchableOpacity onPress={() => navigation.navigate("RegisterScreen")}>
-        <Text style={styles.registerLink}>Registrujte se</Text>
-      </TouchableOpacity>
-    </View>
+            <Text style={styles.registerText}>Nemate nalog?</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("RegisterScreen")}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.registerLink}>Registrujte se</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  keyboardContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   container: {
     flex: 1,
     justifyContent: "flex-start",
@@ -251,6 +293,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginTop: 5,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   buttonText: {
     color: "#fff",
     fontSize: 16,
@@ -259,6 +304,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: "red",
     marginBottom: 10,
+    textAlign: "center",
   },
   forgotPassword: {
     marginTop: 10,

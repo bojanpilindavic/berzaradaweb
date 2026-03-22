@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Platform,
 } from "react-native";
 import { getAuth } from "firebase/auth";
 import {
@@ -56,14 +57,39 @@ const MyJobScreen = () => {
     }
   }, [auth, db]);
 
-  // Refetch svaki put kad se ekran fokusira
   useFocusEffect(
     useCallback(() => {
       fetchMyJobs();
     }, [fetchMyJobs])
   );
 
-  const handleDelete = async (jobId) => {
+  const performDelete = async (jobId) => {
+    try {
+      await deleteDoc(doc(db, "jobs", jobId));
+      setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
+    } catch (error) {
+      console.error("Greška pri brisanju oglasa:", error);
+
+      if (Platform.OS === "web") {
+        window.alert("Došlo je do greške pri brisanju oglasa.");
+      } else {
+        Alert.alert("Greška", "Došlo je do greške pri brisanju oglasa.");
+      }
+    }
+  };
+
+  const handleDelete = (jobId) => {
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "Da li si siguran da želiš obrisati ovaj oglas?"
+      );
+
+      if (confirmed) {
+        performDelete(jobId);
+      }
+      return;
+    }
+
     Alert.alert(
       "Brisanje oglasa",
       "Da li si siguran da želiš obrisati ovaj oglas?",
@@ -72,14 +98,7 @@ const MyJobScreen = () => {
         {
           text: "Obriši",
           style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteDoc(doc(db, "jobs", jobId));
-              setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
-            } catch (error) {
-              console.error("Greška pri brisanju oglasa:", error);
-            }
-          },
+          onPress: () => performDelete(jobId),
         },
       ]
     );
@@ -87,7 +106,6 @@ const MyJobScreen = () => {
 
   const renderItem = ({ item }) => (
     <View style={styles.card}>
-      {/* klikabilni deo za detalje */}
       <TouchableOpacity
         onPress={() => navigation.navigate("JobDetailsScreen", { job: item })}
         activeOpacity={0.8}
@@ -115,10 +133,10 @@ const MyJobScreen = () => {
         </Text>
       </TouchableOpacity>
 
-      {/* dugme obriši odvojeno (nema nested press konflikta) */}
       <TouchableOpacity
         style={styles.deleteButton}
         onPress={() => handleDelete(item.id)}
+        activeOpacity={0.85}
       >
         <Text style={styles.deleteButtonText}>🗑️ Obriši oglas</Text>
       </TouchableOpacity>
@@ -130,11 +148,7 @@ const MyJobScreen = () => {
       <Text style={styles.header}>📂 Moji oglasi</Text>
 
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#5B8DB8"
-          style={{ marginTop: 20 }}
-        />
+        <ActivityIndicator size="large" color="#5B8DB8" style={styles.loader} />
       ) : jobs.length === 0 ? (
         <Text style={styles.noJobsText}>Nema tvojih oglasa.</Text>
       ) : (
@@ -142,7 +156,8 @@ const MyJobScreen = () => {
           data={jobs}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -163,11 +178,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#274E6D",
   },
+  loader: {
+    marginTop: 20,
+  },
   noJobsText: {
     marginTop: 20,
     textAlign: "center",
     fontSize: 16,
     color: "gray",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: "#FFFFE3",

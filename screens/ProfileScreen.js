@@ -6,6 +6,9 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
+  Platform,
+  ActivityIndicator,
+  View,
 } from "react-native";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -20,6 +23,14 @@ const ProfileScreen = () => {
   const [editedData, setEditedData] = useState({});
   const [editing, setEditing] = useState(false);
 
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
+
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) return;
@@ -33,20 +44,20 @@ const ProfileScreen = () => {
           setUserData(data);
           setEditedData(data);
         } else {
-          Alert.alert("Greška", "Podaci o korisniku nisu pronađeni.");
+          showMessage("Greška", "Podaci o korisniku nisu pronađeni.");
         }
       } catch (error) {
         console.error("Greška pri dohvaćanju podataka:", error);
-        Alert.alert("Greška", "Nije moguće dohvatiti podatke o korisniku.");
+        showMessage("Greška", "Nije moguće dohvatiti podatke o korisniku.");
       }
     };
 
     fetchUserData();
-  }, [user?.uid]); // bitno: rerun ako se user promijeni
+  }, [user?.uid]);
 
   const handleSaveChanges = async () => {
     if (!user) {
-      Alert.alert("Greška", "Niste prijavljeni.");
+      showMessage("Greška", "Niste prijavljeni.");
       return;
     }
 
@@ -57,17 +68,26 @@ const ProfileScreen = () => {
       setUserData((prev) => ({ ...prev, ...editedData }));
       setEditing(false);
 
-      Alert.alert("✅ Uspeh", "Podaci su uspešno ažurirani.");
+      showMessage("✅ Uspeh", "Podaci su uspešno ažurirani.");
     } catch (error) {
       console.error("❌ Greška pri ažuriranju profila:", error);
-      Alert.alert("Greška", "Došlo je do greške prilikom čuvanja promena.");
+      showMessage("Greška", "Došlo je do greške prilikom čuvanja promena.");
     }
   };
 
-  if (!userData) return null;
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#5B8DB8" />
+      </View>
+    );
+  }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       <Text style={styles.title}>👤 Moj profil</Text>
 
       <Text style={styles.label}>Email</Text>
@@ -159,11 +179,16 @@ const ProfileScreen = () => {
         <TouchableOpacity
           onPress={() => setEditing(true)}
           style={styles.editButton}
+          activeOpacity={0.85}
         >
           <Text style={styles.editButtonText}>✏️ Izmeni profil</Text>
         </TouchableOpacity>
       ) : (
-        <TouchableOpacity onPress={handleSaveChanges} style={styles.saveButton}>
+        <TouchableOpacity
+          onPress={handleSaveChanges}
+          style={styles.saveButton}
+          activeOpacity={0.85}
+        >
           <Text style={styles.saveButtonText}>💾 Sačuvaj promene</Text>
         </TouchableOpacity>
       )}
@@ -176,6 +201,12 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#F0F0F0",
     flexGrow: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F0F0F0",
   },
   title: {
     fontSize: 24,

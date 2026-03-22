@@ -20,6 +20,8 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
 
+const PAGE_SIZE = 7;
+
 const NajnovijiOglasi = () => {
   const navigation = useNavigation();
 
@@ -34,7 +36,7 @@ const NajnovijiOglasi = () => {
       let q = query(
         collection(db, "jobs"),
         orderBy("createdAt", "desc"),
-        limit(7)
+        limit(PAGE_SIZE)
       );
 
       if (pagination && lastVisible) {
@@ -42,24 +44,30 @@ const NajnovijiOglasi = () => {
           collection(db, "jobs"),
           orderBy("createdAt", "desc"),
           startAfter(lastVisible),
-          limit(7)
+          limit(PAGE_SIZE)
         );
       }
 
       const querySnapshot = await getDocs(q);
+
       const jobsData = querySnapshot.docs.map((d) => ({
         id: d.id,
         ...d.data(),
       }));
 
-      if (pagination) {
-        setOglasi((prev) => [...prev, ...jobsData]);
-      } else {
-        setOglasi(jobsData);
-      }
+      setOglasi((prev) => {
+        if (pagination) {
+          return [...prev, ...jobsData];
+        }
+        return jobsData;
+      });
 
-      const lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-      setLastVisible(lastVisibleDoc || null);
+      const lastVisibleDoc =
+        querySnapshot.docs.length > 0
+          ? querySnapshot.docs[querySnapshot.docs.length - 1]
+          : null;
+
+      setLastVisible(lastVisibleDoc);
 
       console.log("🔁 Oglasi učitani:", jobsData.length);
     } catch (error) {
@@ -67,7 +75,9 @@ const NajnovijiOglasi = () => {
     } finally {
       setLoading(false);
       setLoadingMore(false);
-      if (isRefresh) setRefreshing(false);
+      if (isRefresh) {
+        setRefreshing(false);
+      }
     }
   };
 
@@ -79,18 +89,18 @@ const NajnovijiOglasi = () => {
     }, [])
   );
 
-  const handleRefresh = () => {
+  const handleRefresh = useCallback(() => {
     setRefreshing(true);
     setLastVisible(null);
     fetchJobs(false, true);
-  };
+  }, []);
 
-  const loadMore = () => {
-    if (!loadingMore && lastVisible) {
-      setLoadingMore(true);
-      fetchJobs(true, false);
-    }
-  };
+  const loadMore = useCallback(() => {
+    if (loadingMore || !lastVisible) return;
+
+    setLoadingMore(true);
+    fetchJobs(true, false);
+  }, [loadingMore, lastVisible]);
 
   if (loading && !refreshing) {
     return (
@@ -107,58 +117,68 @@ const NajnovijiOglasi = () => {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
       >
-        {oglasi.map((oglas) => (
-          <TouchableOpacity
-            key={oglas.id}
-            style={styles.card}
-            activeOpacity={0.85}
-            onPress={() =>
-              navigation.navigate("JobDetailsScreen", { job: oglas })
-            }
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.firma} numberOfLines={1}>
-                {oglas.companyName || "Naziv firme"}
-              </Text>
+        {oglasi.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Trenutno nema oglasa.</Text>
+          </View>
+        ) : (
+          oglasi.map((oglas) => (
+            <TouchableOpacity
+              key={oglas.id}
+              style={styles.card}
+              activeOpacity={0.85}
+              onPress={() =>
+                navigation.navigate("JobDetailsScreen", { job: oglas })
+              }
+            >
+              <View style={styles.cardHeader}>
+                <Text style={styles.firma} numberOfLines={1}>
+                  {oglas.companyName || "Naziv firme"}
+                </Text>
 
-              {oglas.logo ? (
-                <Image
-                  source={{ uri: oglas.logo }}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              ) : null}
-            </View>
+                {oglas.logo ? (
+                  <Image
+                    source={{ uri: oglas.logo }}
+                    style={styles.logo}
+                    resizeMode="contain"
+                  />
+                ) : null}
+              </View>
 
-            {!!oglas.position && (
-              <Text style={styles.position}>{oglas.position}</Text>
-            )}
-            {!!oglas.municipality && (
-              <Text style={styles.location}>📍 {oglas.municipality}</Text>
-            )}
-            {!!oglas.endDate && (
-              <Text style={styles.deadline}>
-                ⏳ Konkurs otvoren do: {oglas.endDate}
-              </Text>
-            )}
-            {oglas.numberOfPositions !== undefined &&
-              oglas.numberOfPositions !== null && (
+              {!!oglas.position && (
+                <Text style={styles.position}>{oglas.position}</Text>
+              )}
+
+              {!!oglas.municipality && (
+                <Text style={styles.location}>📍 {oglas.municipality}</Text>
+              )}
+
+              {!!oglas.endDate && (
+                <Text style={styles.deadline}>
+                  ⏳ Konkurs otvoren do: {oglas.endDate}
+                </Text>
+              )}
+
+              {oglas.numberOfPositions !== undefined &&
+              oglas.numberOfPositions !== null ? (
                 <Text style={styles.numberPosition}>
                   👥 Broj slobodnih pozicija: {oglas.numberOfPositions}
                 </Text>
-              )}
-          </TouchableOpacity>
-        ))}
+              ) : null}
+            </TouchableOpacity>
+          ))
+        )}
 
         {loadingMore ? (
           <ActivityIndicator
             size="large"
             color="#add8e6"
-            style={{ marginTop: 20 }}
+            style={styles.loadingMore}
           />
         ) : null}
 
@@ -247,8 +267,8 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
   },
   loadingContainer: {
-    flex: 1, // ✅ OVO JE BITNO da se vidi loading
-    minHeight: 200, // ✅ dodatno osiguranje ako parent nema visinu
+    flex: 1,
+    minHeight: 200,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 30,
@@ -256,6 +276,17 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     color: "#274E6D",
+  },
+  loadingMore: {
+    marginTop: 20,
+  },
+  emptyContainer: {
+    paddingVertical: 30,
+    alignItems: "center",
+  },
+  emptyText: {
+    color: "#274E6D",
+    fontSize: 15,
   },
 });
 

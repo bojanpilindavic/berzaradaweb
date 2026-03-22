@@ -40,7 +40,6 @@ const WorkerApplicationsScreen = () => {
 
         const querySnapshot = await getDocs(q);
 
-        // Paralelno učitavanje poslova (brže)
         const apps = await Promise.all(
           querySnapshot.docs.map(async (docSnap) => {
             const appData = docSnap.data();
@@ -78,16 +77,35 @@ const WorkerApplicationsScreen = () => {
   const formatAppliedAt = (appliedAt) => {
     if (!appliedAt) return "Nepoznat datum";
 
-    // Firestore Timestamp (najčešće)
     if (appliedAt?.seconds) {
       return new Date(appliedAt.seconds * 1000).toLocaleString("sr-RS");
     }
 
-    // Ako nekad dođe Date ili string
     const d = new Date(appliedAt);
     if (isNaN(d.getTime())) return "Nepoznat datum";
     return d.toLocaleString("sr-RS");
   };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
+        <Text style={styles.jobTitle}>
+          {item.job?.position || "Nepoznat oglas"}
+        </Text>
+        <Text style={styles.company}>
+          {item.job?.companyName || "Nepoznata firma"}
+        </Text>
+      </View>
+
+      <Text style={styles.detail}>
+        💬 Poruka: {item.message || "Nema poruke"}
+      </Text>
+      <Text style={styles.detail}>📎 CV: {item.cvName || "Nepoznat fajl"}</Text>
+      <Text style={styles.date}>
+        🕒 Prijavljeno: {formatAppliedAt(item.appliedAt)}
+      </Text>
+    </View>
+  );
 
   if (loading) {
     return (
@@ -111,29 +129,9 @@ const WorkerApplicationsScreen = () => {
       <FlatList
         data={applications}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.jobTitle}>
-                {item.job?.position || "Nepoznat oglas"}
-              </Text>
-              <Text style={styles.company}>
-                {item.job?.companyName || "Nepoznata firma"}
-              </Text>
-            </View>
-
-            <Text style={styles.detail}>
-              💬 Poruka: {item.message || "Nema poruke"}
-            </Text>
-            <Text style={styles.detail}>
-              📎 CV: {item.cvName || "Nepoznat fajl"}
-            </Text>
-            <Text style={styles.date}>
-              🕒 Prijavljeno: {formatAppliedAt(item.appliedAt)}
-            </Text>
-          </View>
-        )}
+        contentContainerStyle={styles.listContent}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -152,6 +150,9 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center",
     color: "#274E6D",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: "#FFFFE3",

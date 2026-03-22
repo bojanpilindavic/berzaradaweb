@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Linking,
   Alert,
+  Platform,
+  TouchableOpacity,
 } from "react-native";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
@@ -28,7 +30,6 @@ const EmployerApplicationsScreen = () => {
           return;
         }
 
-        // Jedan upit je dovoljan (po employerId)
         const appsQuery = query(
           collection(db, "applications"),
           where("employerId", "==", currentUser.uid)
@@ -50,26 +51,54 @@ const EmployerApplicationsScreen = () => {
     };
 
     fetchApplications();
-  }, []);
+  }, [auth]);
+
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+    } else {
+      Alert.alert(title, message);
+    }
+  };
 
   const openCV = async (uri) => {
     if (!uri) {
-      Alert.alert("Greška", "CV nije dostupan.");
+      showMessage("Greška", "CV nije dostupan.");
       return;
     }
 
     try {
-      const supported = await Linking.canOpenURL(uri);
-      if (!supported) {
-        Alert.alert("Greška", "Ne mogu otvoriti ovaj CV link.");
+      if (Platform.OS === "web") {
+        window.open(uri, "_blank", "noopener,noreferrer");
         return;
       }
+
+      const supported = await Linking.canOpenURL(uri);
+      if (!supported) {
+        showMessage("Greška", "Ne mogu otvoriti ovaj CV link.");
+        return;
+      }
+
       await Linking.openURL(uri);
     } catch (err) {
       console.error("Greška pri otvaranju CV-a", err);
-      Alert.alert("Greška", "Ne mogu otvoriti CV.");
+      showMessage("Greška", "Ne mogu otvoriti CV.");
     }
   };
+
+  const renderItem = ({ item }) => (
+    <View style={styles.card}>
+      <Text style={styles.applicantName}>👤 {item.name || "Nepoznato"}</Text>
+      <Text style={styles.email}>📧 {item.email || "—"}</Text>
+      <Text style={styles.message}>
+        💬 Poruka: {item.message || "Bez poruke"}
+      </Text>
+
+      <TouchableOpacity onPress={() => openCV(item.cvUri)} activeOpacity={0.8}>
+        <Text style={styles.cv}>📎 CV: {item.cvName || "Nema naziva"}</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   if (loading) {
     return (
@@ -89,22 +118,9 @@ const EmployerApplicationsScreen = () => {
         <FlatList
           data={applications}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <Text style={styles.applicantName}>
-                👤 {item.name || "Nepoznato"}
-              </Text>
-              <Text style={styles.email}>📧 {item.email || "—"}</Text>
-              <Text style={styles.message}>
-                💬 Poruka: {item.message || "Bez poruke"}
-              </Text>
-
-              <Text style={styles.cv} onPress={() => openCV(item.cvUri)}>
-                📎 CV: {item.cvName || "Nema naziva"}
-              </Text>
-            </View>
-          )}
+          contentContainerStyle={styles.listContent}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -159,12 +175,19 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
     fontWeight: "bold",
   },
-  centered: { flex: 1, justifyContent: "center", alignItems: "center" },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   noAppsText: {
     fontSize: 16,
     color: "gray",
     marginTop: 30,
     textAlign: "center",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 });
 

@@ -9,7 +9,6 @@ import {
   Modal,
   Image,
   Text,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,7 +27,6 @@ const AdminHeader = () => {
   const navigation = useNavigation();
   const auth = getAuth();
 
-  // Praćenje trenutno ulogovanog korisnika
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser ?? null);
@@ -56,7 +54,6 @@ const AdminHeader = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      {/* GORNJI RED: Hamburger + logo + ikone */}
       <View style={styles.topContainer}>
         <TouchableOpacity
           onPress={() => setMenuVisible(true)}
@@ -100,7 +97,6 @@ const AdminHeader = () => {
         </View>
       </View>
 
-      {/* DONJI RED: Search + Objavi oglas (admin) */}
       <View style={styles.bottomContainer}>
         <View style={styles.searchContainer}>
           <Ionicons name="search" size={20} color="#555" />
@@ -118,7 +114,6 @@ const AdminHeader = () => {
             accessibilityLabel="Pretraga oglasa"
           />
 
-          {/* Ako kasnije dodaš voice search, ovo pretvori u dugme */}
           <Ionicons name="mic" size={20} color="#555" />
         </View>
 
@@ -132,7 +127,6 @@ const AdminHeader = () => {
         </TouchableOpacity>
       </View>
 
-      {/* MODAL: Profil meni */}
       <Modal
         visible={profileMenuVisible}
         transparent
@@ -163,7 +157,6 @@ const AdminHeader = () => {
         </View>
       </Modal>
 
-      {/* MODAL: Hamburger meni */}
       <Modal
         visible={menuVisible}
         transparent
@@ -208,7 +201,6 @@ const AdminHeader = () => {
         </View>
       </Modal>
 
-      {/* MODAL: Kontakt */}
       <Modal
         visible={contactVisible}
         transparent
@@ -228,7 +220,6 @@ const AdminHeader = () => {
         </View>
       </Modal>
 
-      {/* MODAL: O nama */}
       <Modal
         visible={aboutVisible}
         transparent
@@ -299,8 +290,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "ios" ? 10 : 6,
+    paddingVertical: 8,
     flex: 1,
+    minWidth: 0,
   },
 
   searchInput: {
@@ -309,6 +301,8 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     marginRight: 6,
     color: "#111",
+    minWidth: 0,
+    outlineStyle: "none",
   },
 
   button: {
@@ -352,7 +346,7 @@ const styles = StyleSheet.create({
 
   aboutContainer: {
     width: "100%",
-    maxHeight: 420, // da ne “izleti” iz ekrana
+    maxHeight: 420,
   },
 
   modalTitle: {

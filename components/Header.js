@@ -7,7 +7,6 @@ import {
   StyleSheet,
   Modal,
   Image,
-  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -78,7 +77,6 @@ const Header = () => {
     try {
       await signOut(auth);
       setProfileMenuVisible(false);
-      // Po potrebi: navigation.replace("LoginScreen");
     } catch (error) {
       console.error("Greška prilikom odjave:", error);
     }
@@ -96,7 +94,6 @@ const Header = () => {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
-      {/* PRVI RED */}
       <View style={styles.topContainer}>
         <TouchableOpacity
           onPress={() => setMenuVisible(true)}
@@ -120,6 +117,7 @@ const Header = () => {
             onPress={goToHeart}
             accessibilityRole="button"
             accessibilityLabel="Sačuvani oglasi"
+            style={styles.iconButton}
           >
             <Ionicons name="heart-outline" size={24} color="#274E6D" />
           </TouchableOpacity>
@@ -148,7 +146,6 @@ const Header = () => {
         </View>
       </View>
 
-      {/* DRUGI RED */}
       <View style={styles.bottomContainer}>
         <View
           style={[styles.searchContainer, !canPostJob && styles.searchFull]}
@@ -185,7 +182,6 @@ const Header = () => {
         ) : null}
       </View>
 
-      {/* MODAL: Meni */}
       <Modal
         visible={menuVisible}
         transparent
@@ -233,7 +229,6 @@ const Header = () => {
         </View>
       </Modal>
 
-      {/* MODAL: Kontakt (fullscreen) */}
       <Modal
         visible={contactVisible}
         animationType="slide"
@@ -241,7 +236,7 @@ const Header = () => {
       >
         <SafeAreaView
           style={styles.fullscreenModal}
-          edges={["top", "left", "right"]}
+          edges={["top", "left", "right", "bottom"]}
         >
           <Contact />
 
@@ -254,7 +249,6 @@ const Header = () => {
         </SafeAreaView>
       </Modal>
 
-      {/* MODAL: O nama (fullscreen) */}
       <Modal
         visible={aboutVisible}
         animationType="slide"
@@ -262,7 +256,7 @@ const Header = () => {
       >
         <SafeAreaView
           style={styles.fullscreenModal}
-          edges={["top", "left", "right"]}
+          edges={["top", "left", "right", "bottom"]}
         >
           <About />
 
@@ -275,7 +269,6 @@ const Header = () => {
         </SafeAreaView>
       </Modal>
 
-      {/* MODAL: Profil korisnika */}
       <Modal
         visible={profileMenuVisible}
         transparent
@@ -343,8 +336,11 @@ const styles = StyleSheet.create({
 
   iconsContainer: {
     flexDirection: "row",
-    gap: 10,
     alignItems: "center",
+  },
+
+  iconButton: {
+    marginRight: 10,
   },
 
   bottomContainer: {
@@ -361,11 +357,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#eee",
     borderRadius: 10,
     paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "ios" ? 10 : 6,
+    paddingVertical: 8,
     flex: 1,
+    minWidth: 0,
   },
 
-  // kad nema dugmeta, search zauzme sve
   searchFull: {
     marginRight: 0,
   },
@@ -376,6 +372,8 @@ const styles = StyleSheet.create({
     marginLeft: 6,
     marginRight: 6,
     color: "#111",
+    minWidth: 0,
+    outlineStyle: "none",
   },
 
   button: {

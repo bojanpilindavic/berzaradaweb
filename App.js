@@ -2,10 +2,10 @@
 import React from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack"; 
+import { createStackNavigator } from "@react-navigation/stack";
 
-import HomeScreen from "./screens/HomeScreen"; 
-import JobDetailsScreen from "./screens/JobDetailsScreen"; 
+import HomeScreen from "./screens/HomeScreen";
+import JobDetailsScreen from "./screens/JobDetailsScreen";
 import ApplyScreen from "./screens/ApplyScreen";
 import RegisterScreen from "./screens/RegisterScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -19,10 +19,9 @@ import JobSearchScreen from "./screens/JobSearchScreen";
 import SplashScreen from "./screens/SplashScreen";
 import MyJobScreen from "./screens/MyJobScreen";
 import SavedJobsScreen from "./screens/SavedJobScreen";
-// ← DODATO
 import AdminHome from "./screens/AdminHome";
-
 import AdminJobScreen from "./screens/AdminJobScreen";
+
 const Stack = createStackNavigator();
 
 const App = () => {
@@ -30,38 +29,94 @@ const App = () => {
     <SafeAreaProvider>
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="SplashScreen"
+          initialRouteName="HomeScreen"
           screenOptions={{
-            headerTintColor: '#75D5C2',
-            headerTitleStyle: { color: '#5B8DB8' },
-            headerStyle: { backgroundColor: '#FFFFFF' }
+            headerTintColor: "#75D5C2",
+            headerTitleStyle: { color: "#5B8DB8" },
+            headerStyle: { backgroundColor: "#FFFFFF" },
           }}
         >
-          <Stack.Screen name="SplashScreen" options={{ headerShown: false }} component={SplashScreen} />
-
-          <Stack.Screen name="HomeScreen" options={{ headerShown: false, title: "Početna" }} component={HomeScreen} />
-          <Stack.Screen name="JobDetailsScreen" options={{ title: "Detalji posla" }} component={JobDetailsScreen} />
-          <Stack.Screen name="ApplyScreen" options={{ title: "Prijava na oglas" }} component={ApplyScreen} />
-          <Stack.Screen name="RegisterScreen" options={{ title: "Registracija" }} component={RegisterScreen} />
-          <Stack.Screen name="LoginScreen" options={{ title: "Prijava" }} component={LoginScreen} />
-          <Stack.Screen name="ProfileScreen" options={{ title: "Moj profil" }} component={ProfileScreen} />
-          <Stack.Screen name="JobAddScreen" options={{ title: "Dodavanje oglasa" }} component={JobAddScreen} />
-          <Stack.Screen name="EmployerApplicationsScreen" options={{ title: "Moje prijave" }} component={EmployerApplicationsScreen} />
-          <Stack.Screen name="WorkerApplicationsScreen" options={{ title: "Moje prijave" }} component={WorkerApplicationsScreen} />
-          <Stack.Screen name="CategoryJobsScreen" options={{ title: "Pretraga" }} component={CategoryJobsScreen} />
-          <Stack.Screen name="MunicipalityJobScreen" options={{ title: "Pretraga" }} component={MunicipalityJobScreen} />
-          <Stack.Screen name="JobSearchScreen" options={{ title: "Pretraga" }} component={JobSearchScreen} />
-          <Stack.Screen name="MyJobScreen" options={{ title: "" }} component={MyJobScreen} />
-          <Stack.Screen name="AdminJobScreen" options={{ title: "" }} component={AdminJobScreen} />
-
-          
-          {/* Naš novi Admin ekran */}
-          <Stack.Screen 
-            name="AdminHome" 
-            component={AdminHome} 
-            options={{ title: "Admin Panel", headerShown: false }} 
+          <Stack.Screen
+            name="SplashScreen"
+            component={SplashScreen}
+            options={{ headerShown: false }}
           />
 
+          <Stack.Screen
+            name="HomeScreen"
+            component={HomeScreen}
+            options={{ headerShown: false, title: "Početna" }}
+          />
+          <Stack.Screen
+            name="JobDetailsScreen"
+            component={JobDetailsScreen}
+            options={{ title: "Detalji posla" }}
+          />
+          <Stack.Screen
+            name="ApplyScreen"
+            component={ApplyScreen}
+            options={{ title: "Prijava na oglas" }}
+          />
+          <Stack.Screen
+            name="RegisterScreen"
+            component={RegisterScreen}
+            options={{ title: "Registracija" }}
+          />
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{ title: "Prijava" }}
+          />
+          <Stack.Screen
+            name="ProfileScreen"
+            component={ProfileScreen}
+            options={{ title: "Moj profil" }}
+          />
+          <Stack.Screen
+            name="JobAddScreen"
+            component={JobAddScreen}
+            options={{ title: "Dodavanje oglasa" }}
+          />
+          <Stack.Screen
+            name="EmployerApplicationsScreen"
+            component={EmployerApplicationsScreen}
+            options={{ title: "Moje prijave" }}
+          />
+          <Stack.Screen
+            name="WorkerApplicationsScreen"
+            component={WorkerApplicationsScreen}
+            options={{ title: "Moje prijave" }}
+          />
+          <Stack.Screen
+            name="CategoryJobsScreen"
+            component={CategoryJobsScreen}
+            options={{ title: "Pretraga" }}
+          />
+          <Stack.Screen
+            name="MunicipalityJobScreen"
+            component={MunicipalityJobScreen}
+            options={{ title: "Pretraga" }}
+          />
+          <Stack.Screen
+            name="JobSearchScreen"
+            component={JobSearchScreen}
+            options={{ title: "Pretraga" }}
+          />
+          <Stack.Screen
+            name="MyJobScreen"
+            component={MyJobScreen}
+            options={{ title: "" }}
+          />
+          <Stack.Screen
+            name="AdminJobScreen"
+            component={AdminJobScreen}
+            options={{ title: "" }}
+          />
+          <Stack.Screen
+            name="AdminHome"
+            component={AdminHome}
+            options={{ title: "Admin Panel", headerShown: false }}
+          />
           <Stack.Screen
             name="SavedJobsScreen"
             component={SavedJobsScreen}

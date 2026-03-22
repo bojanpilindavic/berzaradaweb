@@ -34,7 +34,12 @@ const CATEGORIES = [
     icon: "business-outline",
     color: "#274E6D",
   },
-  { id: 6, name: "Elektrotehnika", icon: "flash-outline", color: "#274E6D" },
+  {
+    id: 6,
+    name: "Elektrotehnika",
+    icon: "flash-outline",
+    color: "#274E6D",
+  },
   {
     id: 7,
     name: "Administrativne usluge",
@@ -47,7 +52,12 @@ const CATEGORIES = [
     icon: "hammer-outline",
     color: "#274E6D",
   },
-  { id: 9, name: "Pravo i ekonomija", icon: "book-outline", color: "#274E6D" },
+  {
+    id: 9,
+    name: "Pravo i ekonomija",
+    icon: "book-outline",
+    color: "#274E6D",
+  },
   {
     id: 10,
     name: "Prerada i obrada drveta",
@@ -112,6 +122,7 @@ const styles = StyleSheet.create({
   },
   category: {
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 15,
     backgroundColor: "#E0F7FA",
     paddingVertical: 10,

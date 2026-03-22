@@ -24,7 +24,6 @@ export default function Category({ selected, onSelect }) {
 
   return (
     <View style={styles.container}>
-      {/* Klik na overlay zatvara dropdown (kad je otvoren) */}
       {open && (
         <Pressable
           style={styles.backdrop}
@@ -77,15 +76,15 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: 10,
     zIndex: 999,
+    position: "relative",
   },
 
-  // overlay preko ekrana da zatvori dropdown klikom van njega
   backdrop: {
-    position: "absolute",
-    top: -1000,
-    left: -1000,
-    right: -1000,
-    bottom: -1000,
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 
   dropdown: {
@@ -99,33 +98,42 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
   dropdownText: {
     color: "#333",
     flex: 1,
     paddingRight: 10,
   },
+
   arrow: {
     color: "#333",
     fontSize: 12,
   },
 
   optionsContainer: {
-    marginTop: 6,
+    position: "absolute",
+    top: 48,
+    left: 0,
+    right: 0,
     borderWidth: 1,
     borderColor: "#999",
     borderRadius: 8,
     backgroundColor: "#fff",
     overflow: "hidden",
+    zIndex: 1000,
   },
+
   option: {
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
+
   optionLast: {
     borderBottomWidth: 0,
   },
+
   optionText: {
     color: "#111",
   },

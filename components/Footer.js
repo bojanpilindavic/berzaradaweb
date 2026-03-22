@@ -35,7 +35,7 @@ const Footer = () => {
     return found?.label ?? "";
   }, [links, visibleModal]);
 
-  const renderModalContent = () => {
+  const renderModalContent = useCallback(() => {
     switch (visibleModal) {
       case "About":
         return <About />;
@@ -48,7 +48,7 @@ const Footer = () => {
       default:
         return null;
     }
-  };
+  }, [visibleModal]);
 
   return (
     <View style={styles.container}>
@@ -60,6 +60,7 @@ const Footer = () => {
             style={styles.linkContainer}
             accessibilityRole="button"
             accessibilityLabel={item.label}
+            activeOpacity={0.7}
           >
             <Text style={styles.linkText}>{item.label}</Text>
           </TouchableOpacity>
@@ -78,9 +79,8 @@ const Footer = () => {
       >
         <SafeAreaView
           style={styles.modalWrapper}
-          edges={["top", "left", "right"]}
+          edges={["top", "left", "right", "bottom"]}
         >
-          {/* Header */}
           <View style={styles.modalHeader}>
             <Text
               style={styles.modalTitle}
@@ -100,7 +100,6 @@ const Footer = () => {
             </TouchableOpacity>
           </View>
 
-          {/* Content */}
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
@@ -108,11 +107,11 @@ const Footer = () => {
             {renderModalContent()}
           </ScrollView>
 
-          {/* Bottom close (kao kod tebe) */}
           <TouchableOpacity
             onPress={closeModal}
             style={styles.closeButton}
             accessibilityRole="button"
+            activeOpacity={0.8}
           >
             <Text style={styles.closeButtonText}>Zatvori</Text>
           </TouchableOpacity>
@@ -131,22 +130,25 @@ const styles = StyleSheet.create({
     borderTopColor: "#dcdcdc",
     alignItems: "center",
   },
+
   linksWrapper: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 15,
-    rowGap: 10,
     paddingHorizontal: 12,
   },
+
   linkContainer: {
     marginHorizontal: 8,
+    marginBottom: 10,
   },
+
   linkText: {
     fontSize: 14,
     color: "#5B8DB8",
     fontWeight: "600",
   },
+
   copyText: {
     marginTop: 15,
     fontSize: 12,
@@ -157,6 +159,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+
   modalHeader: {
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -166,6 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
   modalTitle: {
     fontSize: 16,
     fontWeight: "700",
@@ -173,6 +177,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 12,
   },
+
   headerClose: {
     width: 36,
     height: 36,
@@ -181,6 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: "#F2F2F2",
   },
+
   headerCloseText: {
     fontSize: 16,
     color: "#333",
@@ -196,9 +202,10 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
+
   closeButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 16,
   },
 });

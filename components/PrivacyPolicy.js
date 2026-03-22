@@ -3,7 +3,7 @@ import { ScrollView, Text, StyleSheet } from "react-native";
 
 const PrivacyPolicy = () => {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Politika privatnosti</Text>
 
       <Text style={styles.text}>Poslednje ažuriranje: [UPIŠI_DATUM]</Text>

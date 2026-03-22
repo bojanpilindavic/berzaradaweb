@@ -6,11 +6,18 @@ const SplashScreen = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace("HomeScreen");
-    }, 5000); // 5 sekundi prikaza
+    let isMounted = true;
 
-    return () => clearTimeout(timer);
+    const timer = setTimeout(() => {
+      if (isMounted) {
+        navigation.replace("HomeScreen");
+      }
+    }, 5000);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, [navigation]);
 
   return (

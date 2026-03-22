@@ -37,7 +37,6 @@ const JobDetailsScreen = ({ route, navigation }) => {
 
   const [isSaved, setIsSaved] = useState(false);
 
-  // Provera pri mount-u da li je oglas već sačuvan
   useEffect(() => {
     if (!userDoc || !job?.id) return;
 
@@ -47,7 +46,9 @@ const JobDetailsScreen = ({ route, navigation }) => {
       try {
         const snap = await getDoc(userDoc);
         const savedJobs = snap.exists() ? snap.data()?.savedJobs || [] : [];
-        if (mounted) setIsSaved(savedJobs.includes(job.id));
+        if (mounted) {
+          setIsSaved(savedJobs.includes(job.id));
+        }
       } catch (e) {
         console.error("Greška pri učitavanju sačuvanih oglasa:", e);
       }
@@ -58,9 +59,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
     };
   }, [userDoc, job?.id]);
 
-  // Toggle čuvanja oglasa u Firestore
   const toggleSave = useCallback(async () => {
-    // Ako nije ulogovan, vodi na login
     if (!userDoc || !user || !job?.id) {
       navigation.navigate("LoginScreen");
       return;
@@ -78,11 +77,10 @@ const JobDetailsScreen = ({ route, navigation }) => {
     }
   }, [userDoc, user, job?.id, isSaved, navigation]);
 
-  // Postavljanje zvezdice u header
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <TouchableOpacity onPress={toggleSave} style={{ marginRight: 16 }}>
+        <TouchableOpacity onPress={toggleSave} style={styles.headerButton}>
           <MaterialIcons
             name={isSaved ? "star" : "star-border"}
             size={24}
@@ -94,7 +92,10 @@ const JobDetailsScreen = ({ route, navigation }) => {
   }, [navigation, isSaved, toggleSave]);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      showsVerticalScrollIndicator={false}
+    >
       {job?.logo ? (
         <Image source={{ uri: job.logo }} style={styles.logo} />
       ) : null}
@@ -112,8 +113,6 @@ const JobDetailsScreen = ({ route, navigation }) => {
       <Text style={styles.positions}>
         👥 Broj pozicija: {job?.numberOfPositions ?? "-"}
       </Text>
-
-      <ScrollView />
 
       <Text style={styles.sectionTitle}>Opis posla</Text>
       <Text style={styles.text}>{job?.description || "Opis nije unesen."}</Text>
@@ -137,6 +136,7 @@ const JobDetailsScreen = ({ route, navigation }) => {
               navigation.navigate("LoginScreen");
             }
           }}
+          activeOpacity={0.85}
         >
           <Text style={styles.applyButtonText}>📨 Prijavi se</Text>
         </TouchableOpacity>
@@ -150,6 +150,9 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: "#e6f0fa",
     flexGrow: 1,
+  },
+  headerButton: {
+    marginRight: 16,
   },
   logo: {
     width: 120,

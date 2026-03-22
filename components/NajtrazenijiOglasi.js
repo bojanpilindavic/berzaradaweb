@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Linking,
-  Alert,
+  Platform,
 } from "react-native";
 import { collection, query, limit, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
@@ -18,21 +18,38 @@ const NajtrazenijiOglasi = () => {
   const [oglasi, setOglasi] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const openLink = useCallback(async (url) => {
-    if (!url) return;
-
-    try {
-      const canOpen = await Linking.canOpenURL(url);
-      if (!canOpen) {
-        Alert.alert("Neispravan link", "Ovaj link se ne može otvoriti.");
-        return;
-      }
-      await Linking.openURL(url);
-    } catch (e) {
-      console.error("❌ Greška pri otvaranju linka:", e);
-      Alert.alert("Greška", "Nije moguće otvoriti link.");
+  const showMessage = useCallback((title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(`${title}\n\n${message}`);
+      return;
     }
   }, []);
+
+  const openLink = useCallback(
+    async (url) => {
+      if (!url) return;
+
+      try {
+        const finalUrl =
+          url.startsWith("http://") || url.startsWith("https://")
+            ? url
+            : `https://${url}`;
+
+        const canOpen = await Linking.canOpenURL(finalUrl);
+
+        if (!canOpen) {
+          showMessage("Neispravan link", "Ovaj link se ne može otvoriti.");
+          return;
+        }
+
+        await Linking.openURL(finalUrl);
+      } catch (e) {
+        console.error("❌ Greška pri otvaranju linka:", e);
+        showMessage("Greška", "Nije moguće otvoriti link.");
+      }
+    },
+    [showMessage]
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -47,11 +64,15 @@ const NajtrazenijiOglasi = () => {
           ...d.data(),
         }));
 
-        if (mounted) setOglasi(data);
+        if (mounted) {
+          setOglasi(data);
+        }
       } catch (err) {
         console.error("❌ Greška pri učitavanju oglasa:", err);
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
@@ -108,6 +129,7 @@ const NajtrazenijiOglasi = () => {
                   style={styles.linkContainer}
                   accessibilityRole="button"
                   accessibilityLabel="Otvori link oglasa"
+                  activeOpacity={0.8}
                 >
                   <Text style={styles.linkText} numberOfLines={1}>
                     🔗 Pogledaj link

@@ -3,7 +3,7 @@ import { ScrollView, Text, StyleSheet } from "react-native";
 
 const TermsOfService = () => {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Uslovi korišćenja</Text>
 
       <Text style={styles.text}>Poslednje ažuriranje: [UPIŠI_DATUM]</Text>

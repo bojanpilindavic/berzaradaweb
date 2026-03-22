@@ -15,7 +15,6 @@ const Contact = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Biro Istočno Novo Sarajevo</Text>
-
           <Text style={styles.text}>
             📧 Email: biro.insarajevo@fis.zzzrs.net
           </Text>
@@ -27,7 +26,6 @@ const Contact = () => {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Biro Istočna Ilidža</Text>
-
           <Text style={styles.text}>📧 Email: biro.iilidza@fis.zzzrs.net</Text>
           <Text style={styles.text}>📞 Telefon: 057 / 344 – 262</Text>
           <Text style={styles.text}>
@@ -45,11 +43,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#B6D8F7",
   },
   container: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 28,
     backgroundColor: "#B6D8F7",
-    flexGrow: 1,
   },
   title: {
     fontSize: 24,

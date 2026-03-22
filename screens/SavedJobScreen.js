@@ -27,11 +27,10 @@ const SavedJobsScreen = () => {
 
         if (!user) {
           setJobs([]);
-          setLoading(false); // ✅ bitno
+          setLoading(false);
           return;
         }
 
-        // 1) Učitaj niz sačuvanih oglasa iz korisnikovog dokumenta
         const userSnap = await getDoc(doc(db, "users", user.uid));
         const savedJobsIds = userSnap.exists()
           ? userSnap.data()?.savedJobs || []
@@ -42,7 +41,6 @@ const SavedJobsScreen = () => {
           return;
         }
 
-        // 2) Za svaki ID fetch-uj dokument iz "jobs"
         const jobSnaps = await Promise.all(
           savedJobsIds.map((jobId) => getDoc(doc(db, "jobs", jobId)))
         );
@@ -66,6 +64,7 @@ const SavedJobsScreen = () => {
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate("JobDetailsScreen", { job: item })}
+      activeOpacity={0.8}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.company}>
@@ -110,7 +109,8 @@ const SavedJobsScreen = () => {
         data={jobs}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );
@@ -138,6 +138,9 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     color: "gray",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   card: {
     backgroundColor: "#FFFFE3",

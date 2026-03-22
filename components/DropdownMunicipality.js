@@ -99,11 +99,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+
   dropdownText: {
     color: "#333",
     flex: 1,
     paddingRight: 10,
   },
+
   arrow: {
     color: "#333",
     fontSize: 12,
@@ -117,15 +119,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     overflow: "hidden",
   },
+
   option: {
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
   },
+
   optionLast: {
     borderBottomWidth: 0,
   },
+
   optionText: {
     color: "#111",
   },

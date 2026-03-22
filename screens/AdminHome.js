@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -70,22 +71,42 @@ const AdminHome = () => {
     }
   };
 
+  const performDelete = async (jobId) => {
+    try {
+      await deleteDoc(doc(db, "jobs", jobId));
+      setJobs((current) => current.filter((j) => j.id !== jobId));
+
+      if (Platform.OS === "web") {
+        window.alert("Oglas je uspješno obrisan.");
+      } else {
+        Alert.alert("Obrisano", "Oglas je uspješno obrisan.");
+      }
+    } catch (e) {
+      console.error("Greška pri brisanju oglasa:", e);
+
+      if (Platform.OS === "web") {
+        window.alert("Brisanje oglasa nije uspjelo.");
+      } else {
+        Alert.alert("Greška", "Brisanje oglasa nije uspjelo.");
+      }
+    }
+  };
+
   const handleDelete = (jobId) => {
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm("Želite li obrisati ovaj oglas?");
+      if (confirmed) {
+        performDelete(jobId);
+      }
+      return;
+    }
+
     Alert.alert("Potvrda brisanja", "Želite li obrisati ovaj oglas?", [
       { text: "Otkaži", style: "cancel" },
       {
         text: "Obriši",
         style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteDoc(doc(db, "jobs", jobId));
-            setJobs((current) => current.filter((j) => j.id !== jobId));
-            Alert.alert("Obrisano", "Oglas je uspješno obrisan.");
-          } catch (e) {
-            console.error("Greška pri brisanju oglasa:", e);
-            Alert.alert("Greška", "Brisanje oglasa nije uspjelo.");
-          }
-        },
+        onPress: () => performDelete(jobId),
       },
     ]);
   };
@@ -127,7 +148,7 @@ const AdminHome = () => {
         )}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <View style={{ flex: 1, paddingRight: 12 }}>
+            <View style={styles.cardContent}>
               <Text style={styles.title}>
                 {item.position || "Bez pozicije"}
               </Text>
@@ -142,7 +163,8 @@ const AdminHome = () => {
           </View>
         )}
         ListFooterComponent={() => <Footer />}
-        contentContainerStyle={{ paddingBottom: 20 }}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
       />
     </SafeAreaView>
   );
@@ -183,6 +205,9 @@ const styles = StyleSheet.create({
     color: "#555",
     fontSize: 14,
   },
+  listContent: {
+    paddingBottom: 20,
+  },
   card: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -193,6 +218,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 10,
     elevation: 1,
+  },
+  cardContent: {
+    flex: 1,
+    paddingRight: 12,
   },
   title: {
     fontSize: 16,

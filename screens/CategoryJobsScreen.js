@@ -21,7 +21,7 @@ const CategoryJobsScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const category = route?.params?.category ?? ""; // safe fallback
+  const category = route?.params?.category ?? "";
 
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +65,7 @@ const CategoryJobsScreen = () => {
     <TouchableOpacity
       style={styles.card}
       onPress={() => navigation.navigate("JobDetailsScreen", { job: item })}
+      activeOpacity={0.85}
     >
       <View style={styles.cardHeader}>
         <Text style={styles.firma}>
@@ -93,16 +94,11 @@ const CategoryJobsScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>
-        Kategorija:{" "}
-        <Text style={{ fontWeight: "bold" }}>{category || "—"}</Text>
+        Kategorija: <Text style={styles.headerBold}>{category || "—"}</Text>
       </Text>
 
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#5B8DB8"
-          style={{ marginTop: 20 }}
-        />
+        <ActivityIndicator size="large" color="#5B8DB8" style={styles.loader} />
       ) : jobs.length === 0 ? (
         <Text style={styles.noJobsText}>Nema oglasa za ovu kategoriju.</Text>
       ) : (
@@ -110,7 +106,8 @@ const CategoryJobsScreen = () => {
           data={jobs}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingBottom: 40 }}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
         />
       )}
     </View>
@@ -131,11 +128,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#274E6D",
   },
+  headerBold: {
+    fontWeight: "bold",
+  },
+  loader: {
+    marginTop: 20,
+  },
   noJobsText: {
     marginTop: 20,
     textAlign: "center",
     fontSize: 16,
     color: "#555",
+  },
+  listContent: {
+    paddingBottom: 40,
   },
   card: {
     backgroundColor: "#FFFFE3",
