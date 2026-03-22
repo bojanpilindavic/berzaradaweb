@@ -1,4 +1,3 @@
-// LoginScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -130,108 +129,115 @@ const LoginScreen = () => {
     }
   };
 
+  const content = (
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.container}>
+        <Image
+          source={require("../assets/headerlogo.png")}
+          style={styles.headerLogo}
+        />
+
+        <Text style={styles.title}>Prijava</Text>
+
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="mail-outline"
+            size={20}
+            color="#555"
+            style={styles.icon}
+          />
+          <TextInput
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.inputField}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="next"
+            placeholderTextColor="#777"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Ionicons
+            name="lock-closed-outline"
+            size={20}
+            color="#555"
+            style={styles.icon}
+          />
+          <TextInput
+            placeholder="Šifra"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.inputField}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={handleLogin}
+            placeholderTextColor="#777"
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword((p) => !p)}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name={showPassword ? "eye-off-outline" : "eye-outline"}
+              size={20}
+              color="#555"
+              style={styles.eyeIcon}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleLogin}
+          disabled={loading}
+          activeOpacity={0.85}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Prijavi se</Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={handleForgotPassword} activeOpacity={0.8}>
+          <Text style={styles.forgotPassword}>Zaboravljena šifra?</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.registerText}>Nemate nalog?</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("RegisterScreen")}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.registerLink}>Registrujte se</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
+
+  if (Platform.OS === "web") {
+    return <View style={styles.webWrapper}>{content}</View>;
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={styles.container}>
-            <Image
-              source={require("../assets/headerlogo.png")}
-              style={styles.headerLogo}
-            />
-
-            <Text style={styles.title}>Prijava</Text>
-
-            {errorMessage ? (
-              <Text style={styles.errorText}>{errorMessage}</Text>
-            ) : null}
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="mail-outline"
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-              <TextInput
-                placeholder="Email"
-                value={email}
-                onChangeText={setEmail}
-                style={styles.inputField}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="next"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-              <TextInput
-                placeholder="Šifra"
-                value={password}
-                onChangeText={setPassword}
-                style={styles.inputField}
-                secureTextEntry={!showPassword}
-                autoCapitalize="none"
-                autoCorrect={false}
-                returnKeyType="done"
-                onSubmitEditing={handleLogin}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword((p) => !p)}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name={showPassword ? "eye-off-outline" : "eye-outline"}
-                  size={20}
-                  color="#555"
-                  style={styles.eyeIcon}
-                />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity
-              style={[styles.button, loading && styles.buttonDisabled]}
-              onPress={handleLogin}
-              disabled={loading}
-              activeOpacity={0.85}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Prijavi se</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={handleForgotPassword}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.forgotPassword}>Zaboravljena šifra?</Text>
-            </TouchableOpacity>
-
-            <Text style={styles.registerText}>Nemate nalog?</Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate("RegisterScreen")}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.registerLink}>Registrujte se</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+        {content}
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
@@ -239,6 +245,9 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
   keyboardContainer: {
+    flex: 1,
+  },
+  webWrapper: {
     flex: 1,
   },
   scrollContent: {
@@ -250,6 +259,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     backgroundColor: "#e6f0fa",
+    minHeight: "100%",
   },
   headerLogo: {
     width: 200,
@@ -279,6 +289,7 @@ const styles = StyleSheet.create({
   inputField: {
     flex: 1,
     paddingVertical: 10,
+    outlineStyle: "none",
   },
   eyeIcon: {
     marginLeft: 5,
