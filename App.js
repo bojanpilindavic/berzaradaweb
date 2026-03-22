@@ -1,5 +1,5 @@
-// App.js
-import React from "react";
+import React, { useEffect } from "react";
+import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
@@ -25,6 +25,13 @@ import AdminJobScreen from "./screens/AdminJobScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
+  useEffect(() => {
+    if (Platform.OS === "web" && typeof document !== "undefined") {
+      document.body.style.overflow = "auto";
+      document.body.style.overflowY = "auto";
+    }
+  }, []);
+
   return (
     <SafeAreaProvider>
       <NavigationContainer>
