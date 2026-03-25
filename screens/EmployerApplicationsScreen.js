@@ -61,44 +61,49 @@ const EmployerApplicationsScreen = () => {
     }
   };
 
-  const openCV = async (uri) => {
-    if (!uri) {
+  const openCV = async (url) => {
+    if (!url) {
       showMessage("Greška", "CV nije dostupan.");
       return;
     }
 
     try {
       if (Platform.OS === "web") {
-        window.open(uri, "_blank", "noopener,noreferrer");
+        window.open(url, "_blank", "noopener,noreferrer");
         return;
       }
 
-      const supported = await Linking.canOpenURL(uri);
+      const supported = await Linking.canOpenURL(url);
+
       if (!supported) {
         showMessage("Greška", "Ne mogu otvoriti ovaj CV link.");
         return;
       }
 
-      await Linking.openURL(uri);
+      await Linking.openURL(url);
     } catch (err) {
       console.error("Greška pri otvaranju CV-a", err);
       showMessage("Greška", "Ne mogu otvoriti CV.");
     }
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Text style={styles.applicantName}>👤 {item.name || "Nepoznato"}</Text>
-      <Text style={styles.email}>📧 {item.email || "—"}</Text>
-      <Text style={styles.message}>
-        💬 Poruka: {item.message || "Bez poruke"}
-      </Text>
+  const renderItem = ({ item }) => {
+    const cvLink = item.cvURL || item.cvUri || "";
 
-      <TouchableOpacity onPress={() => openCV(item.cvUri)} activeOpacity={0.8}>
-        <Text style={styles.cv}>📎 CV: {item.cvName || "Nema naziva"}</Text>
-      </TouchableOpacity>
-    </View>
-  );
+    return (
+      <View style={styles.card}>
+        <Text style={styles.applicantName}>👤 {item.name || "Nepoznato"}</Text>
+        <Text style={styles.email}>📧 {item.email || "—"}</Text>
+        <Text style={styles.message}>
+          💬 Poruka: {item.message || "Bez poruke"}
+        </Text>
+
+        <TouchableOpacity onPress={() => openCV(cvLink)} activeOpacity={0.8}>
+          <Text style={styles.cv}>📎 CV: {item.cvName || "Nema naziva"}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
 
   if (loading) {
     return (

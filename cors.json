@@ -1,0 +1,12 @@
+[
+  {
+    "origin": [
+      "http://localhost:8081",
+      "https://berzaradaweb.vercel.app",
+      "https://www.berzaradabih.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "responseHeader": ["Content-Type", "Authorization"],
+    "maxAgeSeconds": 3600
+  }
+]

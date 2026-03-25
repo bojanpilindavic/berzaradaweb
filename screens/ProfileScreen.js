@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Text,
   TextInput,
@@ -9,19 +9,24 @@ import {
   Platform,
   ActivityIndicator,
   View,
+  Image,
 } from "react-native";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import DropdownMunicipality from "../components/DropdownMunicipality";
+import { uploadUserProfileImage } from "../firebase/uploadUserProfileImage";
 
 const ProfileScreen = () => {
   const db = getFirestore();
   const auth = getAuth();
   const user = auth.currentUser;
+  const fileInputRef = useRef(null);
 
   const [userData, setUserData] = useState(null);
   const [editedData, setEditedData] = useState({});
   const [editing, setEditing] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   const showMessage = (title, message) => {
     if (Platform.OS === "web") {
@@ -33,7 +38,10 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     const fetchUserData = async () => {
-      if (!user) return;
+      if (!user) {
+        setLoadingProfile(false);
+        return;
+      }
 
       try {
         const docRef = doc(db, "users", user.uid);
@@ -49,11 +57,67 @@ const ProfileScreen = () => {
       } catch (error) {
         console.error("Greška pri dohvaćanju podataka:", error);
         showMessage("Greška", "Nije moguće dohvatiti podatke o korisniku.");
+      } finally {
+        setLoadingProfile(false);
       }
     };
 
     fetchUserData();
-  }, [user?.uid]);
+  }, [user, db]);
+
+  const handleWebButtonClick = () => {
+    if (!user) {
+      showMessage("Greška", "Niste prijavljeni.");
+      return;
+    }
+
+    if (uploadingImage) return;
+
+    if (Platform.OS === "web" && fileInputRef.current) {
+      fileInputRef.current.value = "";
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleWebFileChange = async (event) => {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    if (!user) {
+      showMessage("Greška", "Niste prijavljeni.");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+
+      const imageURL = await uploadUserProfileImage(user.uid, file);
+
+      setUserData((prev) => ({
+        ...prev,
+        imageURL,
+      }));
+
+      setEditedData((prev) => ({
+        ...prev,
+        imageURL,
+      }));
+
+      showMessage("Uspeh", "Slika profila je uspešno sačuvana.");
+    } catch (error) {
+      console.error("Greška pri uploadu slike:", error);
+      showMessage(
+        "Greška",
+        error?.message || "Došlo je do greške prilikom snimanja slike."
+      );
+    } finally {
+      if (event?.target) {
+        event.target.value = "";
+      }
+      setUploadingImage(false);
+    }
+  };
 
   const handleSaveChanges = async () => {
     if (!user) {
@@ -68,17 +132,25 @@ const ProfileScreen = () => {
       setUserData((prev) => ({ ...prev, ...editedData }));
       setEditing(false);
 
-      showMessage("✅ Uspeh", "Podaci su uspešno ažurirani.");
+      showMessage("Uspeh", "Podaci su uspešno ažurirani.");
     } catch (error) {
-      console.error("❌ Greška pri ažuriranju profila:", error);
+      console.error("Greška pri ažuriranju profila:", error);
       showMessage("Greška", "Došlo je do greške prilikom čuvanja promena.");
     }
   };
 
-  if (!userData) {
+  if (loadingProfile) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#5B8DB8" />
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.emptyText}>Podaci o profilu nisu dostupni.</Text>
       </View>
     );
   }
@@ -89,6 +161,44 @@ const ProfileScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.title}>👤 Moj profil</Text>
+
+      {userData.imageURL ? (
+        <View style={styles.imageWrapper}>
+          <Image
+            source={{ uri: userData.imageURL }}
+            style={styles.profileImage}
+          />
+        </View>
+      ) : null}
+
+      {Platform.OS === "web" ? (
+        <>
+          <TouchableOpacity
+            onPress={handleWebButtonClick}
+            style={styles.logoButton}
+            activeOpacity={0.85}
+            disabled={uploadingImage}
+          >
+            {uploadingImage ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.logoButtonText}>
+                {userData.imageURL
+                  ? "Promijeni logo / sliku"
+                  : "Dodaj logo / sliku"}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleWebFileChange}
+            style={{ display: "none" }}
+          />
+        </>
+      ) : null}
 
       <Text style={styles.label}>Email</Text>
       <Text style={styles.valueBox}>{userData.email}</Text>
@@ -207,6 +317,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#F0F0F0",
+    padding: 20,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: "#333",
+    textAlign: "center",
   },
   title: {
     fontSize: 24,
@@ -214,6 +330,30 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+  },
+  imageWrapper: {
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  profileImage: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#fff",
+  },
+  logoButton: {
+    backgroundColor: "#5B8DB8",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  logoButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
   },
   label: {
     fontWeight: "bold",

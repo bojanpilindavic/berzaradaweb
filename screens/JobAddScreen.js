@@ -165,155 +165,157 @@ const AddJobScreen = () => {
     }
   };
 
+  const content = (
+    <ScrollView
+      ref={scrollViewRef}
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>Objavi oglas</Text>
+
+      <View style={styles.staticField}>
+        <Text style={styles.label}>Naziv firme</Text>
+        <Text style={styles.value}>{companyName || "—"}</Text>
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="briefcase-outline"
+          size={20}
+          color="#555"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          value={position}
+          onChangeText={setPosition}
+          placeholder="Pozicija"
+          returnKeyType="next"
+        />
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="people-outline"
+          size={20}
+          color="#555"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          value={numberOfPositions}
+          onChangeText={setNumberOfPositions}
+          placeholder="Broj pozicija"
+          keyboardType="numeric"
+          returnKeyType="next"
+        />
+      </View>
+
+      <Text style={styles.label}>Trajanje konkursa</Text>
+
+      {Platform.OS === "web" ? (
+        <View style={styles.webDateWrapper}>
+          <Ionicons
+            name="calendar-outline"
+            size={20}
+            color="#555"
+            style={styles.icon}
+          />
+          <input
+            type="date"
+            value={formatDateForInput(endDate)}
+            min={formatDateForInput(new Date())}
+            onChange={handleWebDateChange}
+            style={styles.webDateInput}
+          />
+        </View>
+      ) : (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowPicker(true)}
+            style={styles.datePicker}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color="#555"
+              style={styles.icon}
+            />
+            <Text style={styles.dateText}>
+              {endDate.toLocaleDateString("sr-RS")}
+            </Text>
+          </TouchableOpacity>
+
+          {showPicker && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+            />
+          )}
+        </>
+      )}
+
+      <Text style={styles.label}>Opština</Text>
+      <DropdownMunicipality
+        selected={municipality}
+        onSelect={setMunicipality}
+      />
+
+      <Text style={styles.label}>Kategorija</Text>
+      <Category selected={category} onSelect={setCategory} />
+
+      <Text style={styles.label}>Opis oglasa</Text>
+      <TextInput
+        style={[styles.input, styles.textarea]}
+        value={description}
+        onChangeText={setDescription}
+        placeholder="Opis radnih zadataka"
+        multiline
+        textAlignVertical="top"
+      />
+
+      <Text style={styles.label}>Uslovi posla</Text>
+      <TextInput
+        style={[styles.input, styles.textarea]}
+        value={conditions}
+        onChangeText={setConditions}
+        placeholder="Stručna sprema, radno iskustvo, poznavanje stranog jezika ..."
+        multiline
+        textAlignVertical="top"
+        onFocus={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+      />
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#5B8DB8" style={styles.loader} />
+      ) : (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleAddJob}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.buttonText}>📤 Objavi oglas</Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          ref={scrollViewRef}
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.title}>Objavi oglas</Text>
-
-          <View style={styles.staticField}>
-            <Text style={styles.label}>Naziv firme</Text>
-            <Text style={styles.value}>{companyName || "—"}</Text>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="briefcase-outline"
-              size={20}
-              color="#555"
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              value={position}
-              onChangeText={setPosition}
-              placeholder="Pozicija"
-              returnKeyType="next"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="people-outline"
-              size={20}
-              color="#555"
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              value={numberOfPositions}
-              onChangeText={setNumberOfPositions}
-              placeholder="Broj pozicija"
-              keyboardType="numeric"
-              returnKeyType="next"
-            />
-          </View>
-
-          <Text style={styles.label}>Trajanje konkursa</Text>
-
-          {Platform.OS === "web" ? (
-            <View style={styles.webDateWrapper}>
-              <Ionicons
-                name="calendar-outline"
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-              <input
-                type="date"
-                value={formatDateForInput(endDate)}
-                min={formatDateForInput(new Date())}
-                onChange={handleWebDateChange}
-                style={styles.webDateInput}
-              />
-            </View>
-          ) : (
-            <>
-              <TouchableOpacity
-                onPress={() => setShowPicker(true)}
-                style={styles.datePicker}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name="calendar-outline"
-                  size={20}
-                  color="#555"
-                  style={styles.icon}
-                />
-                <Text style={styles.dateText}>
-                  {endDate.toLocaleDateString("sr-RS")}
-                </Text>
-              </TouchableOpacity>
-
-              {showPicker && (
-                <DateTimePicker
-                  value={endDate}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={handleDateChange}
-                  minimumDate={new Date()}
-                />
-              )}
-            </>
-          )}
-
-          <Text style={styles.label}>Opština</Text>
-          <DropdownMunicipality
-            selected={municipality}
-            onSelect={setMunicipality}
-          />
-
-          <Text style={styles.label}>Kategorija</Text>
-          <Category selected={category} onSelect={setCategory} />
-
-          <Text style={styles.label}>Opis oglasa</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Opis radnih zadataka"
-            multiline
-            textAlignVertical="top"
-          />
-
-          <Text style={styles.label}>Uslovi posla</Text>
-          <TextInput
-            style={[styles.input, styles.textarea]}
-            value={conditions}
-            onChangeText={setConditions}
-            placeholder="Stručna sprema, radno iskustvo, poznavanje stranog jezika ..."
-            multiline
-            textAlignVertical="top"
-            onFocus={() =>
-              scrollViewRef.current?.scrollToEnd({ animated: true })
-            }
-          />
-
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#5B8DB8"
-              style={styles.loader}
-            />
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleAddJob}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.buttonText}>📤 Objavi oglas</Text>
-            </TouchableOpacity>
-          )}
-        </ScrollView>
-      </TouchableWithoutFeedback>
+      {Platform.OS === "web" ? (
+        content
+      ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {content}
+        </TouchableWithoutFeedback>
+      )}
     </KeyboardAvoidingView>
   );
 };

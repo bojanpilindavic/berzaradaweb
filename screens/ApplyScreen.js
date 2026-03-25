@@ -15,7 +15,8 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { db } from "../firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { uploadCVFile } from "../firebase/uploadCVFile";
 
 const ApplyScreen = ({ route }) => {
   const { jobId, uid, employer: employerId } = route.params;
@@ -37,8 +38,13 @@ const ApplyScreen = ({ route }) => {
   const handleFileUpload = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: "*/*",
+        type: [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ],
         copyToCacheDirectory: true,
+        multiple: false,
       });
 
       if (!result || result.canceled) return;
@@ -52,6 +58,7 @@ const ApplyScreen = ({ route }) => {
 
       setCV(file);
     } catch (error) {
+      console.error("Greška pri izboru CV-a:", error);
       showMessage("Greška", "Pokušajte ponovo.");
     }
   };
@@ -60,7 +67,7 @@ const ApplyScreen = ({ route }) => {
     const trimmedName = name.trim();
     const trimmedEmail = email.trim();
 
-    if (!trimmedName || !trimmedEmail || !cv?.uri) {
+    if (!trimmedName || !trimmedEmail || !cv) {
       showMessage("Greška", "Ime, email i CV su obavezni!");
       return;
     }
@@ -72,13 +79,17 @@ const ApplyScreen = ({ route }) => {
     }
 
     setLoading(true);
+
     try {
+      const uploadedCV = await uploadCVFile(uid, cv);
+
       await addDoc(collection(db, "applications"), {
         name: trimmedName,
         email: trimmedEmail,
         message: message.trim(),
-        cvName: cv.name ?? "CV",
-        cvUri: cv.uri,
+        cvName: uploadedCV.fileName,
+        cvURL: uploadedCV.downloadURL,
+        cvStoragePath: uploadedCV.storagePath,
         jobId,
         appliedAt: new Date(),
         uid,
@@ -86,18 +97,21 @@ const ApplyScreen = ({ route }) => {
       });
 
       showMessage("Uspješno", "Vaša prijava je uspješno poslata!");
+
       setName("");
       setEmail("");
       setMessage("");
       setCV(null);
     } catch (error) {
       console.error("Greška pri slanju prijave:", error);
-      showMessage("Greška", "Došlo je do greške pri slanju prijave.");
+      showMessage(
+        "Greška",
+        error?.message || "Došlo je do greške pri slanju prijave."
+      );
     } finally {
       setLoading(false);
     }
   };
-
   const content = (
     <ScrollView
       contentContainerStyle={styles.container}

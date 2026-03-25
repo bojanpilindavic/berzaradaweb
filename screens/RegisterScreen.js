@@ -1,4 +1,3 @@
-// RegisterScreen.js
 import React, { useState } from "react";
 import {
   View,
@@ -6,7 +5,6 @@ import {
   TextInput,
   Alert,
   TouchableOpacity,
-  Image,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -15,7 +13,6 @@ import {
   Button,
   StyleSheet,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
 import TermsOfService from "../components/TermsOfService";
@@ -42,7 +39,6 @@ const RegisterScreen = () => {
   const [companyName, setCompanyName] = useState("");
   const [jib, setJib] = useState("");
   const [activity, setActivity] = useState("");
-  const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
@@ -98,7 +94,7 @@ const RegisterScreen = () => {
 
     if (
       userType === "worker" &&
-      (!fullName.trim() || !trimmedEmail || !password)
+      (!fullName.trim() || !municipality.trim() || !trimmedEmail || !password)
     ) {
       showMessage("Greška", "Sva obavezna polja moraju biti popunjena!");
       isValid = false;
@@ -108,6 +104,7 @@ const RegisterScreen = () => {
       userType === "employer" &&
       (!companyName.trim() ||
         !jib.trim() ||
+        !activity.trim() ||
         !municipality.trim() ||
         !trimmedEmail ||
         !password)
@@ -140,6 +137,7 @@ const RegisterScreen = () => {
       );
 
       const user = userCredential.user;
+
       await sendEmailVerification(user);
 
       await saveUserToFirestore(
@@ -148,7 +146,10 @@ const RegisterScreen = () => {
         {
           email: trimmedEmail,
           ...(userType === "worker"
-            ? { fullName: fullName.trim(), municipality: municipality.trim() }
+            ? {
+                fullName: fullName.trim(),
+                municipality: municipality.trim(),
+              }
             : {
                 companyName: companyName.trim(),
                 jib: jib.trim(),
@@ -156,7 +157,7 @@ const RegisterScreen = () => {
                 municipality: municipality.trim(),
               }),
         },
-        image
+        null
       );
 
       showMessage(
@@ -171,48 +172,24 @@ const RegisterScreen = () => {
       setCompanyName("");
       setJib("");
       setActivity("");
-      setImage(null);
       setMunicipality("");
       setAgreed(false);
       setEmailError("");
       setPasswordError("");
       setConfirmPasswordError("");
     } catch (error) {
+      console.error("Greška pri registraciji:", error);
+
       if (error.code === "auth/email-already-in-use") {
         setEmailError("Email adresa je već registrovana.");
       } else {
-        showMessage("Greška", error.message || "Došlo je do greške.");
+        showMessage(
+          "Greška",
+          error.message || "Došlo je do greške prilikom registracije."
+        );
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const pickImage = async () => {
-    try {
-      if (Platform.OS !== "web") {
-        const { status } =
-          await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (status !== "granted") {
-          showMessage("Dozvola potrebna", "Morate omogućiti pristup galeriji.");
-          return;
-        }
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-      });
-
-      if (!result.canceled && result.assets?.[0]?.uri) {
-        setImage(result.assets[0].uri);
-      }
-    } catch (error) {
-      console.error("Greška pri odabiru slike:", error);
-      showMessage("Greška", "Nije moguće izabrati sliku.");
     }
   };
 
@@ -277,23 +254,6 @@ const RegisterScreen = () => {
             <Text style={styles.tabText}>Poslodavac</Text>
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity
-          style={styles.imageContainer}
-          onPress={pickImage}
-          activeOpacity={0.85}
-        >
-          {image ? (
-            <Image source={{ uri: image }} style={styles.image} />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <MaterialIcons name="photo-camera" size={40} color="gray" />
-              <Text style={styles.imageButtonText}>
-                {userType === "worker" ? "Dodaj sliku" : "Dodaj logo"}
-              </Text>
-            </View>
-          )}
-        </TouchableOpacity>
 
         {userType === "worker" ? (
           <>
@@ -513,29 +473,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
-  },
-  imageContainer: {
-    alignSelf: "center",
-    marginBottom: 20,
-  },
-  image: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-  },
-  imagePlaceholder: {
-    width: 100,
-    height: 100,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 50,
-  },
-  imageButtonText: {
-    fontSize: 12,
-    color: "gray",
-    textAlign: "center",
   },
   inputContainer: {
     width: "100%",

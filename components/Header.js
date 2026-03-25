@@ -288,6 +288,28 @@ const Header = () => {
               <Text style={styles.menuItem}>👤 Moj profil</Text>
             </TouchableOpacity>
 
+            {userType === "employer" && (
+              <TouchableOpacity
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  navigation.navigate("EmployerApplicationsScreen");
+                }}
+              >
+                <Text style={styles.menuItem}>📥 Prijave kandidata</Text>
+              </TouchableOpacity>
+            )}
+
+            {userType === "worker" && (
+              <TouchableOpacity
+                onPress={() => {
+                  setProfileMenuVisible(false);
+                  navigation.navigate("WorkerApplicationsScreen");
+                }}
+              >
+                <Text style={styles.menuItem}>📄 Moje prijave</Text>
+              </TouchableOpacity>
+            )}
+
             <TouchableOpacity onPress={handleLogout}>
               <Text style={[styles.menuItem, styles.logoutItem]}>
                 🚪 Odjavi se

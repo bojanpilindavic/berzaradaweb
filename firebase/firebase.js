@@ -1,5 +1,5 @@
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase/firebase"; // <-- PROMIJENI PUTANJU ako treba
+import { db } from "./firebaseConfig";
 
 export const saveUserToFirestore = async (
   uid,
@@ -7,7 +7,9 @@ export const saveUserToFirestore = async (
   data,
   imageURL = null
 ) => {
-  if (!uid) return;
+  if (!uid) {
+    throw new Error("Nedostaje uid za upis korisnika u Firestore.");
+  }
 
   const userData = {
     uid,
@@ -33,5 +35,6 @@ export const saveUserToFirestore = async (
     console.log("✅ Korisnik uspešno sačuvan u Firestore");
   } catch (error) {
     console.error("❌ Greška prilikom snimanja korisnika:", error);
+    throw error;
   }
 };
