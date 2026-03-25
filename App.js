@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
@@ -25,12 +25,24 @@ import AdminJobScreen from "./screens/AdminJobScreen";
 const Stack = createStackNavigator();
 
 const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+
   useEffect(() => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
       document.body.style.overflow = "auto";
       document.body.style.overflowY = "auto";
     }
+
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
   }, []);
+
+  if (showSplash) {
+    return <SplashScreen />;
+  }
 
   return (
     <SafeAreaProvider>

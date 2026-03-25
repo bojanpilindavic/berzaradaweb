@@ -1,25 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { View, Image, StyleSheet } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 
 const SplashScreen = () => {
-  const navigation = useNavigation();
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const timer = setTimeout(() => {
-      if (isMounted) {
-        navigation.replace("HomeScreen");
-      }
-    }, 5000);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-    };
-  }, [navigation]);
-
   return (
     <View style={styles.container}>
       <Image source={require("../assets/header.png")} style={styles.banner} />
@@ -62,6 +44,7 @@ const styles = StyleSheet.create({
     height: 350,
     resizeMode: "contain",
     marginVertical: 20,
+    maxWidth: "90%",
   },
   partnerContainer: {
     flexDirection: "row",
@@ -69,11 +52,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     paddingHorizontal: 4,
+    flexWrap: "wrap",
   },
   partnerLogo: {
     width: 120,
     height: 120,
     resizeMode: "contain",
+    maxWidth: "40%",
   },
 });
 
