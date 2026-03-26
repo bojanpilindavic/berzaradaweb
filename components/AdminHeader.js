@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
 import About from "./About";
+import Contact from "./Contact";
 
 const AdminHeader = () => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -203,26 +204,26 @@ const AdminHeader = () => {
 
       <Modal
         visible={contactVisible}
-        transparent
         animationType="slide"
         onRequestClose={() => setContactVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Kontakt informacije</Text>
-            <Text style={styles.infoText}>Email: kontakt@berzarada.com</Text>
-            <Text style={styles.infoText}>Telefon: +387 65 123 456</Text>
+        <SafeAreaView
+          style={styles.fullscreenModal}
+          edges={["top", "left", "right", "bottom"]}
+        >
+          <Contact />
 
-            <TouchableOpacity onPress={() => setContactVisible(false)}>
-              <Text style={styles.closeButton}>Zatvori</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          <TouchableOpacity
+            style={[styles.modalButton, styles.modalButtonCentered]}
+            onPress={() => setContactVisible(false)}
+          >
+            <Text style={styles.modalButtonText}>Zatvori</Text>
+          </TouchableOpacity>
+        </SafeAreaView>
       </Modal>
 
       <Modal
         visible={aboutVisible}
-        transparent
         animationType="slide"
         onRequestClose={() => setAboutVisible(false)}
       >
@@ -363,16 +364,34 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
-  infoText: {
-    fontSize: 14,
-    marginBottom: 6,
-    color: "#111",
-    textAlign: "center",
-  },
-
   closeButton: {
     marginTop: 12,
     fontSize: 16,
     color: "red",
+  },
+
+  fullscreenModal: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+    justifyContent: "space-between",
+  },
+
+  modalButton: {
+    backgroundColor: "#274E6D",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+
+  modalButtonCentered: {
+    alignSelf: "center",
+    marginTop: 20,
+  },
+
+  modalButtonText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
