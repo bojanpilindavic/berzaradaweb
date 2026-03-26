@@ -289,6 +289,7 @@ const styles = StyleSheet.create({
   inputField: {
     flex: 1,
     paddingVertical: 10,
+    fontSize: 16,
     outlineStyle: "none",
   },
   eyeIcon: {
