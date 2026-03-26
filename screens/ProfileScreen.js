@@ -104,7 +104,7 @@ const ProfileScreen = () => {
         imageURL,
       }));
 
-      showMessage("Uspeh", "Slika profila je uspešno sačuvana.");
+      showMessage("Potvrda", "Slika profila je uspješno sačuvana.");
     } catch (error) {
       console.error("Greška pri uploadu slike:", error);
       showMessage(
@@ -132,7 +132,7 @@ const ProfileScreen = () => {
       setUserData((prev) => ({ ...prev, ...editedData }));
       setEditing(false);
 
-      showMessage("Uspeh", "Podaci su uspešno ažurirani.");
+      showMessage("Potvrda", "Podaci su uspješno ažurirani.");
     } catch (error) {
       console.error("Greška pri ažuriranju profila:", error);
       showMessage("Greška", "Došlo je do greške prilikom čuvanja promena.");
@@ -258,7 +258,7 @@ const ProfileScreen = () => {
             <Text style={styles.valueBox}>{userData.jib}</Text>
           )}
 
-          <Text style={styles.label}>Delatnost</Text>
+          <Text style={styles.label}>Djelatnost</Text>
           {editing ? (
             <TextInput
               value={editedData.activity ?? ""}

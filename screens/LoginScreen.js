@@ -92,7 +92,7 @@ const LoginScreen = () => {
           message = "Pogrešna šifra ili email. Pokušajte ponovo.";
           break;
         case "auth/too-many-requests":
-          message = "Previše neuspelih pokušaja. Pokušajte kasnije.";
+          message = "Previše neuspjelh pokušaja. Pokušajte kasnije.";
           break;
         default:
           break;
@@ -117,7 +117,7 @@ const LoginScreen = () => {
     try {
       await sendPasswordResetEmail(auth, cleanEmail);
       showMessage(
-        "Uspešno",
+        "Potvrda",
         "Link za resetovanje šifre je poslat na vaš email."
       );
     } catch (error) {

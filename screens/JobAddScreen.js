@@ -148,7 +148,7 @@ const AddJobScreen = () => {
 
       await addDoc(collection(db, "jobs"), jobData);
 
-      showMessage("✅ Uspešno", "Oglas je uspešno dodat!");
+      showMessage("✅ Uspešno", "Oglas je usjpešno dodat!");
 
       setPosition("");
       setNumberOfPositions("");

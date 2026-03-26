@@ -32,7 +32,7 @@ export const saveUserToFirestore = async (
 
   try {
     await setDoc(doc(db, "users", uid), userData, { merge: true });
-    console.log("✅ Korisnik uspešno sačuvan u Firestore");
+    console.log("✅ Korisnik uspješno sačuvan u Firestore");
   } catch (error) {
     console.error("❌ Greška prilikom snimanja korisnika:", error);
     throw error;

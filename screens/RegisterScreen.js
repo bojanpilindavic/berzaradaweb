@@ -304,7 +304,7 @@ const RegisterScreen = () => {
               "briefcase-outline",
               activity,
               setActivity,
-              "Delatnost",
+              "Djelatnost",
               false,
               null,
               true,
