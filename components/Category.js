@@ -5,12 +5,20 @@ import {
   TouchableOpacity,
   StyleSheet,
   Pressable,
+  ScrollView,
 } from "react-native";
 
 const CATEGORIES = [
   "Turizam i ugostiteljstvo",
-  "Tehnicke usluge",
+  "Tehničke usluge",
   "Transport i logistika",
+  "Prehrambena industrija",
+  "Građevina i geodezija",
+  "Elektrotehnika",
+  "Administrativne usluge",
+  "Zanatske i lične usluge",
+  "Pravo i ekonomija",
+  "Prerada i obrada drveta",
   "Ostalo",
 ];
 
@@ -48,24 +56,26 @@ export default function Category({ selected, onSelect }) {
 
       {open && (
         <View style={styles.optionsContainer}>
-          {CATEGORIES.map((item, idx) => {
-            const isLast = idx === CATEGORIES.length - 1;
+          <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={true}>
+            {CATEGORIES.map((item, idx) => {
+              const isLast = idx === CATEGORIES.length - 1;
 
-            return (
-              <TouchableOpacity
-                key={item}
-                onPress={() => {
-                  onSelect?.(item);
-                  close();
-                }}
-                style={[styles.option, isLast && styles.optionLast]}
-                accessibilityRole="button"
-                accessibilityLabel={`Izaberi kategoriju: ${item}`}
-              >
-                <Text style={styles.optionText}>{item}</Text>
-              </TouchableOpacity>
-            );
-          })}
+              return (
+                <TouchableOpacity
+                  key={item}
+                  onPress={() => {
+                    onSelect?.(item);
+                    close();
+                  }}
+                  style={[styles.option, isLast && styles.optionLast]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Izaberi kategoriju: ${item}`}
+                >
+                  <Text style={styles.optionText}>{item}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -121,6 +131,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     overflow: "hidden",
     zIndex: 1000,
+    maxHeight: 260,
   },
 
   option: {

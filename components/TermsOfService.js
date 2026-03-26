@@ -6,7 +6,7 @@ const TermsOfService = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Uslovi korišćenja</Text>
 
-      <Text style={styles.text}>Poslednje ažuriranje: [UPIŠI_DATUM]</Text>
+      <Text style={styles.text}>Poslednje ažuriranje: 25.03.2026.</Text>
 
       <Text style={styles.subtitle}>1. Uvod</Text>
       <Text style={styles.text}>
@@ -38,7 +38,7 @@ const TermsOfService = () => {
         Prilikom registracije obavezni ste da unesete tačne i potpune podatke.
         Odgovorni ste za aktivnosti koje se obavljaju preko vašeg naloga i za
         čuvanje pristupnih podataka. Ako sumnjate na neovlašćen pristup nalogu,
-        obavijestite nas putem: [DODAJ_EMAIL]
+        obavijestite nas putem: raislpz66@gmail.com
       </Text>
 
       <Text style={styles.subtitle}>
@@ -77,7 +77,7 @@ const TermsOfService = () => {
         Zadržavamo pravo da privremeno ili trajno ograničimo pristup,
         suspendujemo ili ukinemo nalog u slučaju kršenja ovih uslova, sumnje na
         prevaru, zloupotrebu ili radi zaštite drugih korisnika i sistema.
-        Korisnik može zatražiti brisanje naloga putem: [DODAJ_EMAIL]
+        Korisnik može zatražiti brisanje naloga putem: raislpz66@gmail.com
       </Text>
 
       <Text style={styles.subtitle}>9. Privatnost</Text>
@@ -121,7 +121,7 @@ const TermsOfService = () => {
       <Text style={styles.text}>
         Za pitanja, prijave zloupotrebe ili pritužbe možete nas kontaktirati
         putem opcije “Kontakt” u aplikaciji ili putem email adrese:
-        [DODAJ_EMAIL]
+        raislpz66@gmail.com
       </Text>
     </ScrollView>
   );

@@ -6,7 +6,7 @@ const PrivacyPolicy = () => {
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Politika privatnosti</Text>
 
-      <Text style={styles.text}>Poslednje ažuriranje: [UPIŠI_DATUM]</Text>
+      <Text style={styles.text}>Poslednje ažuriranje: 25.03.2026.</Text>
 
       <Text style={styles.subtitle}>0. Ko upravlja podacima (kontrolor)</Text>
       <Text style={styles.text}>
@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
         razvojna agencija – RAIS (Istočno Sarajevo).
       </Text>
       <Text style={styles.text}>
-        Kontakt za pitanja i zahtjeve u vezi privatnosti: [DODAJ_EMAIL]
+        Kontakt za pitanja i zahtjeve u vezi privatnosti: raislpz66@gmail.com
       </Text>
 
       <Text style={styles.subtitle}>1. Uvod</Text>
@@ -108,14 +108,14 @@ const PrivacyPolicy = () => {
       <Text style={styles.text}>
         Imate pravo da zatražite uvid, ispravku ili brisanje svojih podataka,
         kao i ograničenje obrade, u skladu sa važećim propisima. Zahtjev možete
-        poslati na: [DODAJ_EMAIL]
+        poslati na: raislpz66@gmail.com
       </Text>
 
       <Text style={styles.subtitle}>10. Brisanje naloga i podataka</Text>
       <Text style={styles.text}>
         Brisanje naloga možete zatražiti putem aplikacije (ako je opcija
-        dostupna) ili slanjem zahtjeva na: [DODAJ_EMAIL]. Nakon verifikacije,
-        obradićemo zahtjev u razumnom roku.
+        dostupna) ili slanjem zahtjeva na: raislpz66@gmail.com. Nakon
+        verifikacije, obradićemo zahtjev u razumnom roku.
       </Text>
 
       <Text style={styles.subtitle}>11. Prenos podataka</Text>
@@ -130,8 +130,8 @@ const PrivacyPolicy = () => {
       <Text style={styles.text}>
         Aplikacija nije namijenjena osobama mlađim od 16 godina. Ne prikupljamo
         svjesno podatke od maloljetnih lica. Ako smatrate da je maloljetno lice
-        dostavilo lične podatke, kontaktirajte nas na: [DODAJ_EMAIL] kako bismo
-        uklonili podatke.
+        dostavilo lične podatke, kontaktirajte nas na: raislpz66@gmail.com kako
+        bismo uklonili podatke.
       </Text>
 
       <Text style={styles.subtitle}>13. Izmjene politike</Text>
