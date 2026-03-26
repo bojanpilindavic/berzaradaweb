@@ -136,130 +136,134 @@ const AdminJobScreen = () => {
     }
   };
 
+  const content = (
+    <ScrollView
+      contentContainerStyle={styles.container}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={styles.title}>Admin: Dodaj oglas</Text>
+
+      <Text style={styles.label}>Poslodavac</Text>
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="business-outline"
+          size={20}
+          color="#555"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          value={employer}
+          onChangeText={setEmployer}
+          placeholder="Unesite ime poslodavca"
+          returnKeyType="next"
+        />
+      </View>
+
+      <Text style={styles.label}>Opština</Text>
+      <View style={styles.dropdownWrapper}>
+        <DropdownMunicipality
+          selected={municipality}
+          onSelect={setMunicipality}
+        />
+      </View>
+
+      <Text style={styles.label}>Trajanje konkursa</Text>
+
+      {Platform.OS === "web" ? (
+        <View style={styles.webDateWrapper}>
+          <Ionicons
+            name="calendar-outline"
+            size={20}
+            color="#555"
+            style={styles.icon}
+          />
+          <input
+            type="date"
+            value={formatDateForInput(endDate)}
+            min={formatDateForInput(new Date())}
+            onChange={handleWebDateChange}
+            style={styles.webDateInput}
+          />
+        </View>
+      ) : (
+        <>
+          <TouchableOpacity
+            onPress={() => setShowPicker(true)}
+            style={styles.datePicker}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="calendar-outline"
+              size={20}
+              color="#555"
+              style={styles.icon}
+            />
+            <Text style={styles.dateText}>
+              {endDate.toLocaleDateString("sr-RS")}
+            </Text>
+          </TouchableOpacity>
+
+          {showPicker && (
+            <DateTimePicker
+              value={endDate}
+              mode="date"
+              display={Platform.OS === "ios" ? "spinner" : "default"}
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+            />
+          )}
+        </>
+      )}
+
+      <Text style={styles.label}>Link</Text>
+      <View style={styles.inputContainer}>
+        <Ionicons
+          name="link-outline"
+          size={20}
+          color="#555"
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          value={link}
+          onChangeText={setLink}
+          placeholder="Unesite URL oglasa"
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType={Platform.OS === "ios" ? "url" : "default"}
+          returnKeyType="done"
+          onSubmitEditing={handleAddJob}
+        />
+      </View>
+
+      {loading ? (
+        <ActivityIndicator size="large" color="#5B8DB8" style={styles.loader} />
+      ) : (
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleAddJob}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.buttonText}>📤 Objavi oglas</Text>
+        </TouchableOpacity>
+      )}
+    </ScrollView>
+  );
+
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={styles.container}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.title}>Admin: Dodaj oglas</Text>
-
-          <Text style={styles.label}>Poslodavac</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="business-outline"
-              size={20}
-              color="#555"
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              value={employer}
-              onChangeText={setEmployer}
-              placeholder="Unesite ime poslodavca"
-              returnKeyType="next"
-            />
-          </View>
-
-          <Text style={styles.label}>Opština</Text>
-          <View style={styles.dropdownWrapper}>
-            <DropdownMunicipality
-              selected={municipality}
-              onSelect={setMunicipality}
-            />
-          </View>
-
-          <Text style={styles.label}>Trajanje konkursa</Text>
-
-          {Platform.OS === "web" ? (
-            <View style={styles.webDateWrapper}>
-              <Ionicons
-                name="calendar-outline"
-                size={20}
-                color="#555"
-                style={styles.icon}
-              />
-              <input
-                type="date"
-                value={formatDateForInput(endDate)}
-                min={formatDateForInput(new Date())}
-                onChange={handleWebDateChange}
-                style={styles.webDateInput}
-              />
-            </View>
-          ) : (
-            <>
-              <TouchableOpacity
-                onPress={() => setShowPicker(true)}
-                style={styles.datePicker}
-                activeOpacity={0.8}
-              >
-                <Ionicons
-                  name="calendar-outline"
-                  size={20}
-                  color="#555"
-                  style={styles.icon}
-                />
-                <Text style={styles.dateText}>
-                  {endDate.toLocaleDateString("sr-RS")}
-                </Text>
-              </TouchableOpacity>
-
-              {showPicker && (
-                <DateTimePicker
-                  value={endDate}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={handleDateChange}
-                  minimumDate={new Date()}
-                />
-              )}
-            </>
-          )}
-
-          <Text style={styles.label}>Link</Text>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="link-outline"
-              size={20}
-              color="#555"
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              value={link}
-              onChangeText={setLink}
-              placeholder="Unesite URL oglasa"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType={Platform.OS === "ios" ? "url" : "default"}
-              returnKeyType="done"
-              onSubmitEditing={handleAddJob}
-            />
-          </View>
-
-          {loading ? (
-            <ActivityIndicator
-              size="large"
-              color="#5B8DB8"
-              style={styles.loader}
-            />
-          ) : (
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleAddJob}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.buttonText}>📤 Objavi oglas</Text>
-            </TouchableOpacity>
-          )}
-        </ScrollView>
-      </TouchableWithoutFeedback>
+      {Platform.OS === "web" ? (
+        content
+      ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          {content}
+        </TouchableWithoutFeedback>
+      )}
     </KeyboardAvoidingView>
   );
 };
@@ -309,6 +313,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     fontSize: 15,
+    outlineStyle: "none",
   },
   datePicker: {
     flexDirection: "row",

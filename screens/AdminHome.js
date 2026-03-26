@@ -27,7 +27,8 @@ import {
 } from "firebase/firestore";
 
 const AdminHome = () => {
-  const [jobs, setJobs] = useState([]);
+  const [regularJobs, setRegularJobs] = useState([]);
+  const [publicJobs, setPublicJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [userEmail, setUserEmail] = useState("");
@@ -36,8 +37,22 @@ const AdminHome = () => {
   const auth = getAuth();
 
   const fetchJobs = useCallback(async () => {
-    const snapshot = await getDocs(collection(db, "jobs"));
-    return snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const jobsSnapshot = await getDocs(collection(db, "jobs"));
+    const adminJobsSnapshot = await getDocs(collection(db, "adminJobs"));
+
+    const regular = jobsSnapshot.docs.map((d) => ({
+      id: d.id,
+      sourceCollection: "jobs",
+      ...d.data(),
+    }));
+
+    const publicList = adminJobsSnapshot.docs.map((d) => ({
+      id: d.id,
+      sourceCollection: "adminJobs",
+      ...d.data(),
+    }));
+
+    return { regular, publicList };
   }, [db]);
 
   useEffect(() => {
@@ -48,7 +63,8 @@ const AdminHome = () => {
     (async () => {
       try {
         const data = await fetchJobs();
-        setJobs(data);
+        setRegularJobs(data.regular);
+        setPublicJobs(data.publicList);
       } catch (e) {
         console.error("Greška pri učitavanju oglasa:", e);
       } finally {
@@ -63,7 +79,8 @@ const AdminHome = () => {
     try {
       setRefreshing(true);
       const data = await fetchJobs();
-      setJobs(data);
+      setRegularJobs(data.regular);
+      setPublicJobs(data.publicList);
     } catch (e) {
       console.error("Greška pri osvežavanju oglasa:", e);
     } finally {
@@ -71,32 +88,36 @@ const AdminHome = () => {
     }
   };
 
-  const performDelete = async (jobId) => {
-    try {
-      await deleteDoc(doc(db, "jobs", jobId));
-      setJobs((current) => current.filter((j) => j.id !== jobId));
-
-      if (Platform.OS === "web") {
-        window.alert("Oglas je uspješno obrisan.");
-      } else {
-        Alert.alert("Obrisano", "Oglas je uspješno obrisan.");
-      }
-    } catch (e) {
-      console.error("Greška pri brisanju oglasa:", e);
-
-      if (Platform.OS === "web") {
-        window.alert("Brisanje oglasa nije uspjelo.");
-      } else {
-        Alert.alert("Greška", "Brisanje oglasa nije uspjelo.");
-      }
+  const showMessage = (title, message) => {
+    if (Platform.OS === "web") {
+      window.alert(message);
+    } else {
+      Alert.alert(title, message);
     }
   };
 
-  const handleDelete = (jobId) => {
+  const performDelete = async (item) => {
+    try {
+      await deleteDoc(doc(db, item.sourceCollection, item.id));
+
+      if (item.sourceCollection === "jobs") {
+        setRegularJobs((prev) => prev.filter((j) => j.id !== item.id));
+      } else {
+        setPublicJobs((prev) => prev.filter((j) => j.id !== item.id));
+      }
+
+      showMessage("Obrisano", "Oglas je uspješno obrisan.");
+    } catch (e) {
+      console.error("Greška pri brisanju oglasa:", e);
+      showMessage("Greška", "Brisanje oglasa nije uspjelo.");
+    }
+  };
+
+  const handleDelete = (item) => {
     if (Platform.OS === "web") {
       const confirmed = window.confirm("Želite li obrisati ovaj oglas?");
       if (confirmed) {
-        performDelete(jobId);
+        performDelete(item);
       }
       return;
     }
@@ -106,10 +127,44 @@ const AdminHome = () => {
       {
         text: "Obriši",
         style: "destructive",
-        onPress: () => performDelete(jobId),
+        onPress: () => performDelete(item),
       },
     ]);
   };
+
+  const renderJobItem = ({ item }) => (
+    <View style={styles.card}>
+      <View style={styles.cardContent}>
+        <Text style={styles.title}>
+          {item.position || item.employer || "Bez naziva"}
+        </Text>
+        <Text style={styles.company}>
+          {item.companyName || item.municipality || "Bez dodatnih podataka"}
+        </Text>
+      </View>
+
+      <TouchableOpacity onPress={() => handleDelete(item)}>
+        <Text style={styles.deleteText}>Obriši</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const Section = ({ title, data, emptyText }) => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+
+      {data.length === 0 ? (
+        <Text style={styles.emptySectionText}>{emptyText}</Text>
+      ) : (
+        <FlatList
+          data={data}
+          keyExtractor={(item) => `${item.sourceCollection}_${item.id}`}
+          renderItem={renderJobItem}
+          scrollEnabled={false}
+        />
+      )}
+    </View>
+  );
 
   if (loading) {
     return (
@@ -125,44 +180,33 @@ const AdminHome = () => {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <FlatList
-        data={jobs}
+        data={[{ id: "content" }]}
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
         }
-        ListHeaderComponent={() => (
-          <>
-            <AdminHeader />
-            <View style={styles.container}>
-              <Text style={styles.header}>🛠️ Admin Panel</Text>
-              {!!userEmail && (
-                <Text style={styles.subtitle}>Ulogovani: {userEmail}</Text>
-              )}
-            </View>
-          </>
-        )}
-        ListEmptyComponent={() => (
-          <View style={styles.empty}>
-            <Text style={styles.emptyText}>Nema oglasa za prikaz.</Text>
-          </View>
-        )}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardContent}>
-              <Text style={styles.title}>
-                {item.position || "Bez pozicije"}
-              </Text>
-              <Text style={styles.company}>
-                {item.companyName || "Bez naziva firme"}
-              </Text>
-            </View>
+        renderItem={() => (
+          <View style={styles.container}>
+            <Text style={styles.header}>🛠️ Admin Panel</Text>
+            {!!userEmail && (
+              <Text style={styles.subtitle}>Ulogovani: {userEmail}</Text>
+            )}
 
-            <TouchableOpacity onPress={() => handleDelete(item.id)}>
-              <Text style={styles.deleteText}>Obriši</Text>
-            </TouchableOpacity>
+            <Section
+              title="Oglasi firmi"
+              data={regularJobs}
+              emptyText="Nema oglasa firmi."
+            />
+
+            <Section
+              title="Javne nabavke"
+              data={publicJobs}
+              emptyText="Nema javnih nabavki."
+            />
           </View>
         )}
-        ListFooterComponent={() => <Footer />}
+        ListHeaderComponent={<AdminHeader />}
+        ListFooterComponent={<Footer />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -189,24 +233,29 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: "#555",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  empty: {
-    paddingHorizontal: 16,
-    paddingVertical: 30,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: "#555",
-    fontSize: 14,
-  },
   listContent: {
     paddingBottom: 20,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#274E6D",
+    marginBottom: 10,
+  },
+  emptySectionText: {
+    color: "#777",
+    fontSize: 14,
+    marginBottom: 10,
   },
   card: {
     flexDirection: "row",
@@ -215,7 +264,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFE3",
     padding: 12,
     borderRadius: 8,
-    marginHorizontal: 16,
     marginBottom: 10,
     elevation: 1,
   },

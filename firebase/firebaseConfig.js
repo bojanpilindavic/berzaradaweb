@@ -38,7 +38,7 @@ if (Platform.OS === "web") {
 const db = getFirestore(app);
 const storage = getStorage(app);
 
-export const ADMIN_EMAIL = "matematicki_kutak@yahoo.com";
+export const ADMIN_EMAIL = "raislpz66@gmail.com";
 
 export const isAdmin = (email) => {
   return email === ADMIN_EMAIL;
