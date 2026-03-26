@@ -56,7 +56,7 @@ const NajtrazenijiOglasi = () => {
 
     const fetchJobs = async () => {
       try {
-        const q = query(collection(db, "adminJobs"), limit(5));
+        const q = query(collection(db, "adminJobs"), limit(10));
         const snapshot = await getDocs(q);
 
         const data = snapshot.docs.map((d) => ({
