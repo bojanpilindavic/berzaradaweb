@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
+import { inject } from "@vercel/analytics";
 
 import HomeScreen from "./screens/HomeScreen";
 import JobDetailsScreen from "./screens/JobDetailsScreen";
@@ -31,6 +32,8 @@ const App = () => {
     if (Platform.OS === "web" && typeof document !== "undefined") {
       document.body.style.overflow = "auto";
       document.body.style.overflowY = "auto";
+
+      inject({ mode: "production" });
     }
 
     const timer = setTimeout(() => {
