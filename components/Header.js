@@ -16,11 +16,13 @@ import { getFirestore, doc, getDoc } from "firebase/firestore";
 
 import About from "./About";
 import Contact from "./Contact";
+import MaliBiznisi from "./MaliBiznisi";
 
 const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [contactVisible, setContactVisible] = useState(false);
   const [aboutVisible, setAboutVisible] = useState(false);
+  const [maliBiznisiVisible, setMaliBiznisiVisible] = useState(false);
   const [profileMenuVisible, setProfileMenuVisible] = useState(false);
 
   const [user, setUser] = useState(null);
@@ -46,6 +48,7 @@ const Header = () => {
 
       try {
         const snap = await getDoc(doc(db, "users", currentUser.uid));
+
         if (!isMounted) return;
 
         if (snap.exists()) {
@@ -53,9 +56,12 @@ const Header = () => {
         } else {
           setUserType(null);
         }
-      } catch (e) {
-        console.error("Greška pri učitavanju userType:", e);
-        if (isMounted) setUserType(null);
+      } catch (error) {
+        console.error("Greška pri učitavanju userType:", error);
+
+        if (isMounted) {
+          setUserType(null);
+        }
       }
     });
 
@@ -67,6 +73,7 @@ const Header = () => {
 
   const handleSearch = useCallback(() => {
     const query = searchTerm.trim();
+
     if (!query) return;
 
     navigation.navigate("JobSearchScreen", { query });
@@ -220,6 +227,15 @@ const Header = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
+              onPress={() => {
+                setMenuVisible(false);
+                setMaliBiznisiVisible(true);
+              }}
+            >
+              <Text style={styles.menuItem}>🏪 Mali biznisi, velike priče</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
               style={[styles.modalButton, styles.modalButtonCentered]}
               onPress={() => setMenuVisible(false)}
             >
@@ -266,6 +282,19 @@ const Header = () => {
           >
             <Text style={styles.modalButtonText}>Zatvori</Text>
           </TouchableOpacity>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={maliBiznisiVisible}
+        animationType="slide"
+        onRequestClose={() => setMaliBiznisiVisible(false)}
+      >
+        <SafeAreaView
+          style={styles.maliBiznisiModal}
+          edges={["top", "left", "right", "bottom"]}
+        >
+          <MaliBiznisi onClose={() => setMaliBiznisiVisible(false)} />
         </SafeAreaView>
       </Modal>
 
@@ -420,7 +449,7 @@ const styles = StyleSheet.create({
   },
 
   modalBox: {
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     width: "100%",
     maxWidth: 360,
     borderRadius: 12,
@@ -458,16 +487,21 @@ const styles = StyleSheet.create({
   },
 
   modalButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 16,
   },
 
   fullscreenModal: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     padding: 20,
     justifyContent: "space-between",
+  },
+
+  maliBiznisiModal: {
+    flex: 1,
+    backgroundColor: "#F7FBFF",
   },
 });
 
